@@ -19,17 +19,16 @@ namespace grid {
 		Fl_Image* bg_white_transparent;
 
 		Fl_Grid(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_), Grid(w_ / g_size, h_ / g_size),
-			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w* grid_h / 25), 1)) {
+			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w * grid_h / 10), 1)) {
 			//oscr_grid = fl_create_offscreen(w(), h());
-			uchar data[4]{ 255,255,255,100 };
+			uchar data[4]{ 255,255,255,80 };
 			Fl_RGB_Image img(data, 1, 1, 4);
 
 			bg_white_transparent = img.copy(w_, h_);
 
 			// for test only
-			status[0][0] = 1;
-			nodes[0][0] = { 10,-1,-1 };
-			queue.push_back({ 0,0 });
+			nodes[0][0] = { d_min,-1,-1 };
+			queue.push_back({ 0,0,0,0 });
 			orig.push_back({ 0,0 });
 		}
 
@@ -55,7 +54,7 @@ namespace grid {
 			if (redraw_flag) {
 				draw_grid();
 				//print_dist();
-				draw_flow(20, 20);
+				//draw_flow(20, 20);
 				redraw_flag = false;
 			} else {
 				update_grid();
@@ -80,6 +79,9 @@ namespace grid {
 		}
 
 		void draw_flow(int px, int py) {
+			if (!status[px][py]) {
+				return;
+			}
 			fl_color(FL_RED);
 			fl_line_style(FL_SOLID, 3);
 			fl_begin_line();
@@ -101,7 +103,7 @@ namespace grid {
 		void draw_pos(int cx, int cy, bool in_offscreen = false) {
 			if (barrier[cx][cy] != 0) {
 				fl_color(FL_DARK3);
-			} else if (status[cx][cy] && show_distance) {
+			} else if (status[cx][cy] == 3 && show_distance) {
 				double l = 1 - exp(-(nodes[cx][cy].distance - d_min) / double(d_max) * 1.5);
 				//std::cout << l << std::endl;
 				fl_color(draw::linear_gradient(l));

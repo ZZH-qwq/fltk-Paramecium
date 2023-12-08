@@ -29,6 +29,7 @@ int main() {
     const int w = 800, h = 800, x = 0, y = 0, g_size = 20;
 
     control::win = new Fl_Double_Window(w, h, "Paramecium");
+    control::win->color(FL_LIGHT3);
     control::g = new grid::Fl_Grid(x, y, w, h, g_size);
     control::bar = new grid::Fl_Barrier(x, y, w, h, g_size);
     control::handler = new control::Fl_Event_Handler(x, y, w, h, g_size);

@@ -22,90 +22,96 @@ namespace grid {
 			int distance, fx, fy;
 		};
 
+		struct Intermediate {
+			int stage, cx, cy, f;
+		};
+
+		const int FATHER[9][2] = { {0,0},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1} };
+
 		std::vector<std::vector<int>> status;
+		std::vector<std::vector<int>> expected;
 		std::vector<std::vector<int>> barrier;
 		std::vector<std::vector<Node>> nodes;
 		size_t grid_w, grid_h;
 
 		std::list<std::pair<int, int>> orig;
-		std::list<std::pair<int, int>> queue;
+		std::list<Intermediate> queue;
 		std::list<std::pair<int, int>> updated;
 		int d_min = 10, d_max = 10;
 
 		bool show_border = false;
 		bool step_flag = false, redraw_flag = true;
 
+		int count = 0;
+
 		Grid(size_t w_, size_t h_) :grid_w(w_), grid_h(h_),
-			status(w_, std::vector<int>(h_, 0)), barrier(w_, std::vector<int>(h_, 0)),
-			nodes(w_, std::vector<Node>(h_)), d_max(w_ * 2) {
+			status(w_, std::vector<int>(h_, 0)), expected(w_, std::vector<int>(h_, 0)), barrier(w_, std::vector<int>(h_, 0)),
+			nodes(w_, std::vector<Node>(h_)), d_max(w_ / 2) {
 		}
 
 		// A single step for BFS
 		void bfs_step() {
+			//std::cout << ++count << std::endl;
 			assert(!queue.empty());
-			auto [cx, cy] = queue.front();
-			if (cx < grid_w - 1) {
-				renew_distance(cx, cy, cx + 1, cy);
-				push_pos(cx + 1, cy, cx, cy);
+			int cx = queue.front().cx, cy = queue.front().cy;
+			if (queue.front().stage != 0) {
+				// Not finished
+				if (status[cx][cy] < 3 - queue.front().stage) {
+					status[cx][cy] = 3 - queue.front().stage;
+					queue.push_back({ queue.front().stage - 1,cx,cy,queue.front().f });
+				}
+				queue.pop_front();
+				return;
 			}
-			if (cx > 0) {
-				renew_distance(cx, cy, cx - 1, cy);
-				push_pos(cx - 1, cy, cx, cy);
-			}
-			if (cy < grid_h - 1) {
-				renew_distance(cx, cy, cx, cy + 1);
-				push_pos(cx, cy + 1, cx, cy);
-			}
-			if (cy > 0) {
-				renew_distance(cx, cy, cx, cy - 1);
-				push_pos(cx, cy - 1, cx, cy);
+			// Finished
+			status[cx][cy] = 3;
+			updated.push_back({ cx,cy });
+			int f = queue.front().f, fx = cx + FATHER[f][0], fy = cy + FATHER[f][1];
+			if (f != 0) {
+				// Not origin
+				int new_d = nodes[fx][fy].distance + (f % 2 ? 2 : 3);
+				nodes[cx][cy] = { new_d,fx,fy };
+				if (new_d > 1.5 * d_max) {
+					d_max = new_d;
+					redraw_flag = true;
+				}
 			}
 			if (cx < grid_w - 1 && cy < grid_h - 1) {
-				renew_distance(cx, cy, cx + 1, cy + 1);
+				push_pos(cx + 1, cy + 1, 6);
 			}
 			if (cx > 0 && cy < grid_h - 1) {
-				renew_distance(cx, cy, cx - 1, cy + 1);
+				push_pos(cx - 1, cy + 1, 8);
 			}
 			if (cx < grid_w - 1 && cy > 0) {
-				renew_distance(cx, cy, cx + 1, cy - 1);
+				push_pos(cx + 1, cy - 1, 4);
 			}
 			if (cx > 0 && cy > 0) {
-				renew_distance(cx, cy, cx - 1, cy - 1);
+				push_pos(cx - 1, cy - 1, 2);
+			}
+			if (cx < grid_w - 1) {
+				push_pos(cx + 1, cy, 5);
+			}
+			if (cx > 0) {
+				push_pos(cx - 1, cy, 1);
+			}
+			if (cy < grid_h - 1) {
+				push_pos(cx, cy + 1, 7);
+			}
+			if (cy > 0) {
+				push_pos(cx, cy - 1, 3);
 			}
 			queue.pop_front();
 			//print_flow();
 		}
 
-		void push_pos(int px, int py, int fx, int fy) {
-			if (!status[px][py] && barrier[px][py] == 0) {
-				status[px][py] = 1;
-				nodes[px][py].distance = nodes[fx][fy].distance + 10;
-				//d_max = std::max(d_max, nodes[px][py].distance);
-				if (nodes[px][py].distance > 1.5 * d_max) {
-					d_max = nodes[px][py].distance;
-					redraw_flag = true;
-				}
-				nodes[px][py].fx = fx, nodes[px][py].fy = fy;
-				queue.push_back({ px,py });
-				updated.push_back({ px,py });
-			}
-		};
-
-		void renew_distance(int cx, int cy, int fx, int fy) {
-			if (status[fx][fy] && barrier[fx][fy] == 0) {
-				int new_d = nodes[fx][fy].distance;
-				if (cx == fx || cy == fy) {
-					new_d += 10;
-				} else if (barrier[fx][cy] == 0 || barrier[cx][fy] == 0) {
-					new_d += 14;
-				} else {
+		void push_pos(int cx, int cy, int f) {
+			if (barrier[cx][cy] == 0 && status[cx][cy] <= f % 2) {
+				int expected_d = nodes[cx + FATHER[f][0]][cy + FATHER[f][1]].distance + (f % 2 ? 2 : 3);
+				if (expected[cx][cy] != 0 && expected[cx][cy] <= expected_d) {
 					return;
 				}
-				if (new_d < nodes[cx][cy].distance) {
-					nodes[cx][cy].distance = new_d;
-					nodes[cx][cy].fx = fx, nodes[cx][cy].fy = fy;
-					updated.push_back({ cx,cy });
-				}
+				queue.push_back({ (f % 2 ? 1 : 2),cx,cy,f });
+				expected[cx][cy] = expected_d;
 			}
 		};
 
@@ -135,6 +141,19 @@ namespace grid {
 		void add_barrier(int x, int y) { barrier[x][y] = 1; }
 
 		void remove_barrier(int x, int y) { barrier[x][y] = 0; }
+
+		void clear_status() {
+			status = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
+			expected = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
+			redraw_flag = true;
+			d_max = grid_w / 2;
+			for (auto& p : orig) {
+				int px = p.first, py = p.second;
+				nodes[px][py] = { d_min,-1,-1 };
+				barrier[px][py] = 0;
+				queue.push_back({ 0,px,py,0 });
+			}
+		}
 
 		void print_flow() {
 			size_t x = 0, y = 0;
@@ -179,19 +198,6 @@ namespace grid {
 				std::cout << std::endl;
 			}
 			std::cout << std::endl;
-		}
-
-		void clear_status() {
-			status = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
-			redraw_flag = true;
-			queue = orig;
-			d_max = grid_w * 5;
-			for (auto& p : orig) {
-				int px = p.first, py = p.second;
-				nodes[px][py] = { 10,-1,-1 };
-				barrier[px][py] = 0;
-				status[px][py] = 1;
-			}
 		}
 	};
 } // namespace grid
