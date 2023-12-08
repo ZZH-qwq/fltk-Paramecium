@@ -141,7 +141,7 @@ namespace grid {
 			for (auto& col : nodes) {
 				y = 0;
 				for (auto& i : col) {
-					if (i.distance > 0) {
+					if (barrier[x][y] == 0) {
 						//std::cout << i.distance << "\t";
 						if (i.fx == x) {
 							std::cout << "- ";
@@ -188,8 +188,9 @@ namespace grid {
 			d_max = grid_w * 5;
 			for (auto& p : orig) {
 				int px = p.first, py = p.second;
-				nodes[px][py] = { 10,px,py };
+				nodes[px][py] = { 10,-1,-1 };
 				barrier[px][py] = 0;
+				status[px][py] = 1;
 			}
 		}
 	};

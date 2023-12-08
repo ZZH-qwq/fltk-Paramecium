@@ -2,6 +2,7 @@
 #include <FL/Fl.H>
 #include <FL/Enumerations.H>
 #include <FL/Fl_Double_Window.H>
+#include <FL/Fl_RGB_Image.H>
 #include <FL/Fl_Box.H>
 #include <FL/fl_draw.H> 
 

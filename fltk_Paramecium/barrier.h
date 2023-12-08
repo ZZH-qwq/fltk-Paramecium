@@ -28,9 +28,13 @@ namespace grid {
             g->clear_status();
         }
 
-        void remove_barrier_for(Grid* g, int x, int y) {
+        int remove_barrier_for(Grid* g, int x, int y) {
+            if (g->barrier[x][y] == 0) {
+                return 0;
+            }
             g->remove_barrier(x, y);
             g->clear_status();
+            return 1;
         }
 
         const std::vector<std::pair<int, int>>& line_intersection() {

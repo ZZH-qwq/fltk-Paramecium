@@ -72,7 +72,7 @@ namespace grid {
             }
             case FL_PUSH: {
 #if DEBUG
-                std::cout << "Crusor x = " << grid_x << ", y = " << grid_y << std::endl;
+                std::cout << "Crusor x = " << grid_x << ", y = " << grid_y << ", dist = " << g->nodes[grid_x][grid_y].distance << std::endl;
 #endif // DEBUG
                 return 1;
             }
@@ -95,9 +95,16 @@ namespace grid {
                 }
                 case FL_RIGHT_MOUSE: {
                     if (has_temp) {
+                        has_temp = false;
+                        g->show_border = false;
                         return 0;
                     }
-                    remove_barrier_for(g, grid_x, grid_y);
+                    //return remove_barrier_for(g, grid_x, grid_y);
+                    auto rm = remove_barrier_for(g, grid_x, grid_y);
+                    if (rm == 0) {
+                        g->draw_flow(grid_x, grid_y);
+                    }
+                    return rm;
                     break;
                 }
                 default:

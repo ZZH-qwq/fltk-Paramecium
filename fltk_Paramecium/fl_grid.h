@@ -16,14 +16,19 @@ namespace grid {
 		//Fl_Offscreen oscr_grid;
 		const size_t step_count;
 		bool show_distance = true;
+		Fl_Image* bg_white_transparent;
 
 		Fl_Grid(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_), Grid(w_ / g_size, h_ / g_size),
 			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w* grid_h / 25), 1)) {
 			//oscr_grid = fl_create_offscreen(w(), h());
+			uchar data[4]{ 255,255,255,100 };
+			Fl_RGB_Image img(data, 1, 1, 4);
+
+			bg_white_transparent = img.copy(w_, h_);
 
 			// for test only
 			status[0][0] = 1;
-			nodes[0][0] = { 10,0,0 };
+			nodes[0][0] = { 10,-1,-1 };
 			queue.push_back({ 0,0 });
 			orig.push_back({ 0,0 });
 		}
@@ -49,7 +54,8 @@ namespace grid {
 			}
 			if (redraw_flag) {
 				draw_grid();
-				//print_flow();
+				//print_dist();
+				draw_flow(20, 20);
 				redraw_flag = false;
 			} else {
 				update_grid();
@@ -62,7 +68,8 @@ namespace grid {
 		void draw_grid() {
 			updated.clear();
 			//fl_begin_offscreen(oscr_grid);
-			fl_rectf(0, 0, w(), h(), FL_WHITE);
+			//fl_rectf(0, 0, w(), h(), FL_WHITE);
+			bg_white_transparent->draw(x(), y());
 			for (size_t i = 0; i < grid_w; i++) {
 				for (size_t j = 0; j < grid_h; j++) {
 					draw_pos(i, j);
@@ -70,6 +77,18 @@ namespace grid {
 			}
 			//fl_end_offscreen();
 			//fl_copy_offscreen(x(), y(), w(), h(), oscr_grid, 0, 0);
+		}
+
+		void draw_flow(int px, int py) {
+			fl_color(FL_RED);
+			fl_line_style(FL_SOLID, 3);
+			fl_begin_line();
+			while (px >= 0) {
+				fl_vertex(x() + px * pixels_per_grid + pixels_per_grid / 2.0, y() + py * pixels_per_grid + pixels_per_grid / 2.0);
+				auto& p = nodes[px][py];
+				px = p.fx, py = p.fy;
+			}
+			fl_end_line();
 		}
 
 		void update_grid() {
