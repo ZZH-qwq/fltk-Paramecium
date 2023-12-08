@@ -18,7 +18,7 @@ namespace grid {
 		void draw_temp_line() {
 			line_intersection();
 			for (auto& i : segs) {
-#if DEBUG
+#ifdef _DEBUG
 				//std::cout << "line point: (" << i.first << " " << i.second << ")" << std::endl;
 #endif
 				draw_pos(i.first, i.second, 0xAAAAAA00);
@@ -71,9 +71,9 @@ namespace grid {
                 return 1;
             }
             case FL_PUSH: {
-#if DEBUG
+#ifdef _DEBUG
                 std::cout << "Crusor x = " << grid_x << ", y = " << grid_y << std::endl;
-#endif // DEBUG
+#endif
                 return 1;
             }
             case FL_RELEASE: {

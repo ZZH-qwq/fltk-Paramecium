@@ -64,13 +64,13 @@ namespace grid {
                 double k = (y1 - y2) / (x1 - x2), b = y1 - k * x1;
                 std::set<std::pair<double, double>> sp;
                 for (int i = std::ceil(xmin); i <= std::floor(xmax); i++) {
-#if DEBUG
+#ifdef _DEBUG
                     //std::cout << "line point x:" << i << " " << k * i + b << std::endl;
 #endif
                     sp.insert({ i,k * i + b });
                 }
                 for (int j = std::ceil(ymin); j <= std::floor(ymax); j++) {
-#if DEBUG
+#ifdef _DEBUG
                     //std::cout << "line point y:" << (j - b) / k << " " << j << std::endl;
 #endif
                     sp.insert({ (j - b) / k,j });
