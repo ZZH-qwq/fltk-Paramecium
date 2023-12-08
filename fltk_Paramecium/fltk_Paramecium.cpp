@@ -1,5 +1,4 @@
-﻿#define NOMINMAX
-#include <FL/Fl.H>
+﻿#include <FL/Fl.H>
 #include <FL/Enumerations.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Box.H>
@@ -13,8 +12,6 @@
 #include <cmath>
 #include <algorithm>
 #include <cassert>
-
-#define DEBUG true
 
 #include "fl_event_handler.h"
 
