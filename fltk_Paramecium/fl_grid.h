@@ -103,7 +103,7 @@ namespace grid {
 		void draw_pos(int cx, int cy, bool in_offscreen = false) {
 			if (barrier[cx][cy] != 0) {
 				fl_color(FL_DARK3);
-			} else if (status[cx][cy] == 3 && show_distance) {
+			} else if (status[cx][cy] == 1 && show_distance) {
 				double l = 1 - exp(-(nodes[cx][cy].distance - d_min) / double(d_max) * 1.5);
 				//std::cout << l << std::endl;
 				fl_color(draw::linear_gradient(l));

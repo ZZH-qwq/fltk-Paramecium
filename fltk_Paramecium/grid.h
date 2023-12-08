@@ -42,6 +42,7 @@ namespace grid {
 		bool show_border = false;
 		bool step_flag = false, redraw_flag = true;
 
+		// for test only
 		int count = 0;
 
 		Grid(size_t w_, size_t h_) :grid_w(w_), grid_h(h_),
@@ -54,17 +55,18 @@ namespace grid {
 			//std::cout << ++count << std::endl;
 			assert(!queue.empty());
 			int cx = queue.front().cx, cy = queue.front().cy;
+			if (status[cx][cy] == 1) {
+				queue.pop_front();
+				return;
+			}
 			if (queue.front().stage != 0) {
 				// Not finished
-				if (status[cx][cy] < 3 - queue.front().stage) {
-					status[cx][cy] = 3 - queue.front().stage;
-					queue.push_back({ queue.front().stage - 1,cx,cy,queue.front().f });
-				}
+				queue.push_back({ queue.front().stage - 1,cx,cy,queue.front().f });
 				queue.pop_front();
 				return;
 			}
 			// Finished
-			status[cx][cy] = 3;
+			status[cx][cy] = 1;
 			updated.push_back({ cx,cy });
 			int f = queue.front().f, fx = cx + FATHER[f][0], fy = cy + FATHER[f][1];
 			if (f != 0) {
@@ -105,7 +107,10 @@ namespace grid {
 		}
 
 		void push_pos(int cx, int cy, int f) {
-			if (barrier[cx][cy] == 0 && status[cx][cy] <= f % 2) {
+			if (status[cx][cy] == 0 && barrier[cx][cy] == 0) {
+				if (!(f % 2) && barrier[cx + FATHER[f][0]][cy] && barrier[cx][cy + FATHER[f][1]]) {
+					return;
+				}
 				int expected_d = nodes[cx + FATHER[f][0]][cy + FATHER[f][1]].distance + (f % 2 ? 2 : 3);
 				if (expected[cx][cy] != 0 && expected[cx][cy] <= expected_d) {
 					return;
