@@ -37,7 +37,7 @@ namespace grid {
 		std::list<std::pair<int, int>> orig;
 		std::list<Intermediate> queue;
 		std::list<std::pair<int, int>> updated;
-		int d_min = 10, d_max = 10;
+		int d_min = 1, d_max = 10;
 
 		bool show_border = false;
 		bool step_flag = false, redraw_flag = true;
@@ -48,14 +48,21 @@ namespace grid {
 		Grid(size_t w_, size_t h_) :grid_w(w_), grid_h(h_),
 			status(w_, std::vector<int>(h_, 0)), expected(w_, std::vector<int>(h_, 0)), barrier(w_, std::vector<int>(h_, 0)),
 			nodes(w_, std::vector<Node>(h_)), d_max(w_ / 2) {
+
+			// for test only
+			nodes[0][0] = { d_min,-1,-1 };
+			queue.push_back({ 0,0,0,0 });
+			orig.push_back({ 0,0 });
 		}
 
 		// A single step for BFS
 		void bfs_step() {
+#ifdef _DEBUG
 			//std::cout << ++count << std::endl;
+#endif
 			assert(!queue.empty());
 			int cx = queue.front().cx, cy = queue.front().cy;
-			if (status[cx][cy] == 1) {
+			if (status[cx][cy]) {
 				queue.pop_front();
 				return;
 			}
@@ -103,15 +110,15 @@ namespace grid {
 				push_pos(cx, cy - 1, 3);
 			}
 			queue.pop_front();
-			//print_flow();
 		}
 
 		void push_pos(int cx, int cy, int f) {
 			if (status[cx][cy] == 0 && barrier[cx][cy] == 0) {
-				if (!(f % 2) && barrier[cx + FATHER[f][0]][cy] && barrier[cx][cy + FATHER[f][1]]) {
+				int fx = cx + FATHER[f][0], fy = cy + FATHER[f][1];
+				if (!(f % 2) && barrier[fx][cy] && barrier[cx][fy]) {
 					return;
 				}
-				int expected_d = nodes[cx + FATHER[f][0]][cy + FATHER[f][1]].distance + (f % 2 ? 2 : 3);
+				int expected_d = nodes[fx][fy].distance + (f % 2 ? 2 : 3);
 				if (expected[cx][cy] != 0 && expected[cx][cy] <= expected_d) {
 					return;
 				}

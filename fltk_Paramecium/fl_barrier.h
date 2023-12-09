@@ -34,7 +34,6 @@ namespace grid {
             if (!redraw_flag) {
                 return;
             }
-            // fl_rectf(x(), y(), w(), h(), FL_WHITE);
             if (has_temp) {
                 draw_temp_line();
             }

@@ -21,15 +21,9 @@ namespace grid {
 		Fl_Grid(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_), Grid(w_ / g_size, h_ / g_size),
 			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w * grid_h / 10), 1)) {
 			//oscr_grid = fl_create_offscreen(w(), h());
-			uchar data[4]{ 255,255,255,80 };
+			uchar data[4]{ 255,255,255,40 };
 			Fl_RGB_Image img(data, 1, 1, 4);
-
 			bg_white_transparent = img.copy(w_, h_);
-
-			// for test only
-			nodes[0][0] = { d_min,-1,-1 };
-			queue.push_back({ 0,0,0,0 });
-			orig.push_back({ 0,0 });
 		}
 
 		void draw_border() {
@@ -54,7 +48,7 @@ namespace grid {
 			if (redraw_flag) {
 				draw_grid();
 				//print_dist();
-				//draw_flow(20, 20);
+				draw_flow(20, 20);
 				redraw_flag = false;
 			} else {
 				update_grid();

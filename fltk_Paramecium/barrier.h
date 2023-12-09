@@ -64,27 +64,25 @@ namespace grid {
                 }
                 return segs;
             }
-            if (x1 != x2) {
-                double k = (y1 - y2) / (x1 - x2), b = y1 - k * x1;
-                std::set<std::pair<double, double>> sp;
-                for (int i = std::ceil(xmin); i <= std::floor(xmax); i++) {
+            double k = (y1 - y2) / (x1 - x2), b = y1 - k * x1;
+            std::set<std::pair<double, double>> sp;
+            for (int i = std::ceil(xmin); i <= std::floor(xmax); i++) {
 #ifdef _DEBUG
-                    //std::cout << "line point x:" << i << " " << k * i + b << std::endl;
+                //std::cout << "line point x:" << i << " " << k * i + b << std::endl;
 #endif
-                    sp.insert({ i,k * i + b });
-                }
-                for (int j = std::ceil(ymin); j <= std::floor(ymax); j++) {
-#ifdef _DEBUG
-                    //std::cout << "line point y:" << (j - b) / k << " " << j << std::endl;
-#endif
-                    sp.insert({ (j - b) / k,j });
-                }
-                for (auto it = sp.cbegin(); !sp.empty() && it != --sp.cend();) {
-                    auto it2 = it++;
-                    segs.push_back({ std::max(std::ceil(it->first),std::ceil(it2->first)) - 1,std::max(std::ceil(it->second),std::ceil(it2->second)) - 1 });
-                }
-                return segs;
+                sp.insert({ i,k * i + b });
             }
+            for (int j = std::ceil(ymin); j <= std::floor(ymax); j++) {
+#ifdef _DEBUG
+                //std::cout << "line point y:" << (j - b) / k << " " << j << std::endl;
+#endif
+                sp.insert({ (j - b) / k,j });
+            }
+            for (auto it = sp.cbegin(); !sp.empty() && it != --sp.cend();) {
+                auto it2 = it++;
+                segs.push_back({ std::max(std::ceil(it->first),std::ceil(it2->first)) - 1,std::max(std::ceil(it->second),std::ceil(it2->second)) - 1 });
+            }
+            return segs;
 		}
 
         void clear_line() {
