@@ -18,9 +18,9 @@
 
 
 void timeout_cb(void*) {
-    if (!control::g->queue.empty()) {
+    /*if (!control::g->queue.empty()) {
         control::g->bfs_step();
-    }
+    }*/
     control::g->step_flag = true;
     Fl::repeat_timeout(0.001, timeout_cb);
 }

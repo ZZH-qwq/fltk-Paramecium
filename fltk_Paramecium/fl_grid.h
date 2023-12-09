@@ -19,7 +19,7 @@ namespace grid {
 		Fl_Image* bg_white_transparent;
 
 		Fl_Grid(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_), Grid(w_ / g_size, h_ / g_size),
-			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w * grid_h / 10), 1)) {
+			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w * grid_h / 20), 1)) {
 			//oscr_grid = fl_create_offscreen(w(), h());
 			uchar data[4]{ 255,255,255,40 };
 			Fl_RGB_Image img(data, 1, 1, 4);
@@ -39,8 +39,8 @@ namespace grid {
 
 		void draw() override {
 			//bfs_step();
-			if (step_flag && !queue.empty()) {
-				for (size_t i = 0; i <= step_count && !queue.empty(); i++) {
+			if (step_flag && curr_d < queue.size()) {
+				for (size_t i = 0; i <= step_count && curr_d < queue.size(); i++) {
 					bfs_step();
 				}
 				step_flag = false;

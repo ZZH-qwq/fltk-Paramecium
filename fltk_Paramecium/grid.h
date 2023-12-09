@@ -23,7 +23,7 @@ namespace grid {
 		};
 
 		struct Intermediate {
-			int stage, cx, cy, f;
+			int cx, cy, f;
 		};
 
 		const int FATHER[9][2] = { {0,0},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1} };
@@ -35,9 +35,10 @@ namespace grid {
 		size_t grid_w, grid_h;
 
 		std::list<std::pair<int, int>> orig;
-		std::list<Intermediate> queue;
+		std::vector<std::list<Intermediate>> queue;
 		std::list<std::pair<int, int>> updated;
 		int d_min = 1, d_max = 10;
+		int curr_d = d_min;
 
 		bool show_border = false;
 		bool step_flag = false, redraw_flag = true;
@@ -51,7 +52,8 @@ namespace grid {
 
 			// for test only
 			nodes[0][0] = { d_min,-1,-1 };
-			queue.push_back({ 0,0,0,0 });
+			queue = std::vector<std::list<Intermediate>>(d_min + 1);
+			queue[d_min].push_back({0,0,0});
 			orig.push_back({ 0,0 });
 		}
 
@@ -60,26 +62,26 @@ namespace grid {
 #ifdef _DEBUG
 			//std::cout << ++count << std::endl;
 #endif
-			assert(!queue.empty());
-			int cx = queue.front().cx, cy = queue.front().cy;
-			if (status[cx][cy]) {
-				queue.pop_front();
-				return;
+			//assert(!queue.empty());
+			while (queue[curr_d].empty()) {
+				curr_d++;
+				if (curr_d >= queue.size()) {
+					return;
+				}
 			}
-			if (queue.front().stage != 0) {
-				// Not finished
-				queue.push_back({ queue.front().stage - 1,cx,cy,queue.front().f });
-				queue.pop_front();
+			int cx = queue[curr_d].front().cx, cy = queue[curr_d].front().cy;
+			if (status[cx][cy]) {
+				queue[curr_d].pop_front();
 				return;
 			}
 			// Finished
 			status[cx][cy] = 1;
 			updated.push_back({ cx,cy });
-			int f = queue.front().f, fx = cx + FATHER[f][0], fy = cy + FATHER[f][1];
+			int f = queue[curr_d].front().f;
 			if (f != 0) {
 				// Not origin
-				int new_d = nodes[fx][fy].distance + (f % 2 ? 2 : 3);
-				nodes[cx][cy] = { new_d,fx,fy };
+				int new_d = expected[cx][cy];
+				nodes[cx][cy] = { new_d,cx + FATHER[f][0],cy + FATHER[f][1] };
 				if (new_d > 1.5 * d_max) {
 					d_max = new_d;
 					redraw_flag = true;
@@ -109,7 +111,7 @@ namespace grid {
 			if (cy > 0) {
 				push_pos(cx, cy - 1, 3);
 			}
-			queue.pop_front();
+			queue[curr_d].pop_front();
 		}
 
 		void push_pos(int cx, int cy, int f) {
@@ -118,11 +120,14 @@ namespace grid {
 				if (!(f % 2) && barrier[fx][cy] && barrier[cx][fy]) {
 					return;
 				}
-				int expected_d = nodes[fx][fy].distance + (f % 2 ? 2 : 3);
+				int expected_d = curr_d + (f % 2 ? 2 : 3);
 				if (expected[cx][cy] != 0 && expected[cx][cy] <= expected_d) {
 					return;
 				}
-				queue.push_back({ (f % 2 ? 1 : 2),cx,cy,f });
+				while (queue.size() <= expected_d) {
+					queue.push_back({});
+				}
+				queue[expected_d].push_back({ cx,cy,f });
 				expected[cx][cy] = expected_d;
 			}
 		};
@@ -159,11 +164,13 @@ namespace grid {
 			expected = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
 			redraw_flag = true;
 			d_max = grid_w / 2;
+			queue = std::vector<std::list<Intermediate>>(d_min + 1);
+			curr_d = d_min;
 			for (auto& p : orig) {
 				int px = p.first, py = p.second;
 				nodes[px][py] = { d_min,-1,-1 };
 				barrier[px][py] = 0;
-				queue.push_back({ 0,px,py,0 });
+				queue[d_min].push_back({px,py,0});
 			}
 		}
 
