@@ -18,10 +18,6 @@ namespace grid {
 
 	class Grid {
 	public:
-		struct Node {
-			int distance, fx, fy;
-		};
-
 		struct Intermediate {
 			int cx, cy, f;
 		};
@@ -29,9 +25,9 @@ namespace grid {
 		const int FATHER[9][2] = { {0,0},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1} };
 
 		std::vector<std::vector<int>> status;
-		std::vector<std::vector<int>> expected;
+		std::vector<std::vector<int>> distance;
 		std::vector<std::vector<int>> barrier;
-		std::vector<std::vector<Node>> nodes;
+		std::vector<std::vector<int>> father;
 		size_t grid_w, grid_h;
 
 		std::list<std::pair<int, int>> orig;
@@ -47,11 +43,11 @@ namespace grid {
 		int count = 0;
 
 		Grid(size_t w_, size_t h_) :grid_w(w_), grid_h(h_),
-			status(w_, std::vector<int>(h_, 0)), expected(w_, std::vector<int>(h_, 0)), barrier(w_, std::vector<int>(h_, 0)),
-			nodes(w_, std::vector<Node>(h_)), d_max(w_ / 2) {
+			status(w_, std::vector<int>(h_, 0)), distance(w_, std::vector<int>(h_, 0)), barrier(w_, std::vector<int>(h_, 0)),
+			father(w_, std::vector<int>(h_)), d_max(w_ / 2) {
 
 			// for test only
-			nodes[0][0] = { d_min,-1,-1 };
+			father[0][0] = 0;
 			queue = std::vector<std::list<Intermediate>>(d_min + 1);
 			queue[d_min].push_back({0,0,0});
 			orig.push_back({ 0,0 });
@@ -62,7 +58,7 @@ namespace grid {
 #ifdef _DEBUG
 			//std::cout << ++count << std::endl;
 #endif
-			//assert(!queue.empty());
+			assert(curr_d < queue.size());
 			while (queue[curr_d].empty()) {
 				curr_d++;
 				if (curr_d >= queue.size()) {
@@ -80,10 +76,9 @@ namespace grid {
 			int f = queue[curr_d].front().f;
 			if (f != 0) {
 				// Not origin
-				int new_d = expected[cx][cy];
-				nodes[cx][cy] = { new_d,cx + FATHER[f][0],cy + FATHER[f][1] };
-				if (new_d > 1.5 * d_max) {
-					d_max = new_d;
+				father[cx][cy] = f;
+				if (distance[cx][cy] > 1.5 * d_max) {
+					d_max = distance[cx][cy];
 					redraw_flag = true;
 				}
 			}
@@ -116,19 +111,18 @@ namespace grid {
 
 		void push_pos(int cx, int cy, int f) {
 			if (status[cx][cy] == 0 && barrier[cx][cy] == 0) {
-				int fx = cx + FATHER[f][0], fy = cy + FATHER[f][1];
-				if (!(f % 2) && barrier[fx][cy] && barrier[cx][fy]) {
+				if (!(f % 2) && barrier[size_t(cx) + FATHER[f][0]][cy] && barrier[cx][size_t(cy) + FATHER[f][1]]) {
 					return;
 				}
 				int expected_d = curr_d + (f % 2 ? 2 : 3);
-				if (expected[cx][cy] != 0 && expected[cx][cy] <= expected_d) {
+				if (distance[cx][cy] != 0 && distance[cx][cy] <= expected_d) {
 					return;
 				}
 				while (queue.size() <= expected_d) {
 					queue.push_back({});
 				}
 				queue[expected_d].push_back({ cx,cy,f });
-				expected[cx][cy] = expected_d;
+				distance[cx][cy] = expected_d;
 			}
 		};
 
@@ -161,57 +155,52 @@ namespace grid {
 
 		void clear_status() {
 			status = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
-			expected = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
+			distance = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
 			redraw_flag = true;
 			d_max = grid_w / 2;
 			queue = std::vector<std::list<Intermediate>>(d_min + 1);
 			curr_d = d_min;
 			for (auto& p : orig) {
 				int px = p.first, py = p.second;
-				nodes[px][py] = { d_min,-1,-1 };
+				father[px][py] = 0;
 				barrier[px][py] = 0;
 				queue[d_min].push_back({px,py,0});
 			}
 		}
 
 		void print_flow() {
-			size_t x = 0, y = 0;
-			for (auto& col : nodes) {
-				y = 0;
-				for (auto& i : col) {
-					if (barrier[x][y] == 0) {
-						//std::cout << i.distance << "\t";
-						if (i.fx == x) {
+			for (size_t j = 0; j < grid_h; j++) {
+				for (size_t i = 0; i < grid_w; i++) {
+					if (barrier[i][j]) {
+						std::cout << "x ";
+					} else if (status[i][j]) {
+						if (i == 3 || i == 7) {
 							std::cout << "- ";
-						} else if (i.fy == y) {
+						} else if (i == 1 || i == 5) {
 							std::cout << "| ";
-						} else if (i.fx > x && i.fy > y || i.fx < x && i.fy < y) {
+						} else if (i == 2 || i == 6) {
 							std::cout << "\\ ";
 						} else {
 							std::cout << "/ ";
 						}
 					} else {
-						if (barrier[x][y]) {
-							std::cout << "x ";
-						} else {
-							std::cout << "  ";
-						}
+						std::cout << "  ";
 					}
-					y++;
 				}
 				std::cout << std::endl;
-				x++;
 			}
 			std::cout << std::endl;
 		}
 
 		void print_dist() {
-			for (auto& col : nodes) {
-				for (auto& i : col) {
-					if (i.distance > 0) {
-						std::cout << i.distance << "\t";
+			for (size_t j = 0; j < grid_h; j++) {
+				for (size_t i = 0; i < grid_w; i++) {
+					if (barrier[i][j]) {
+						std::cout << "x" << "\t";
+					} else if (status[i][j]) {
+						std::cout << distance[i][j] << "\t";
 					} else {
-						std::cout << "  " << "\t";
+						std::cout << " " << "\t";
 					}
 				}
 				std::cout << std::endl;

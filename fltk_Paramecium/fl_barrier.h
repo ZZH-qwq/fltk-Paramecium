@@ -71,7 +71,7 @@ namespace grid {
             }
             case FL_PUSH: {
 #ifdef _DEBUG
-                std::cout << "Crusor x = " << grid_x << ", y = " << grid_y << ", dist = " << g->nodes[grid_x][grid_y].distance << std::endl;
+                std::cout << "Crusor x = " << grid_x << ", y = " << grid_y << ", dist = " << g->distance[grid_x][grid_y] << std::endl;
 #endif
                 return 1;
             }

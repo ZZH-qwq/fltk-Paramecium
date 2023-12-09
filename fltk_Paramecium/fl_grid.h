@@ -79,10 +79,11 @@ namespace grid {
 			fl_color(FL_RED);
 			fl_line_style(FL_SOLID, 3);
 			fl_begin_line();
-			while (px >= 0) {
+			int f = father[px][py];
+			while (f > 0) {
 				fl_vertex(x() + px * pixels_per_grid + pixels_per_grid / 2.0, y() + py * pixels_per_grid + pixels_per_grid / 2.0);
-				auto& p = nodes[px][py];
-				px = p.fx, py = p.fy;
+				px = px + FATHER[f][0], py = py + FATHER[f][1];
+				f = father[px][py];
 			}
 			fl_end_line();
 		}
@@ -98,7 +99,7 @@ namespace grid {
 			if (barrier[cx][cy] != 0) {
 				fl_color(FL_DARK3);
 			} else if (status[cx][cy] == 1 && show_distance) {
-				double l = 1 - exp(-(nodes[cx][cy].distance - d_min) / double(d_max) * 1.5);
+				double l = 1 - exp(-(distance[cx][cy] - d_min) / double(d_max) * 1.5);
 				//std::cout << l << std::endl;
 				fl_color(draw::linear_gradient(l));
 			} else {
