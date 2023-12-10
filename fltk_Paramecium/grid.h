@@ -2,7 +2,7 @@
 
 /*
 *  grid.h
-* 
+*
 *  A basic grid with information on origin points, barriers, distances, etc.
 *  Constructing information via BFS
 */
@@ -31,13 +31,15 @@ namespace grid {
 		size_t grid_w, grid_h;
 
 		std::list<std::pair<int, int>> orig;
-		std::vector<std::list<Intermediate>> queue;
+		std::deque<std::list<Intermediate>> queue;
 		std::list<std::pair<int, int>> updated;
+
+		const int len_straight = 2, len_diagonal = 3;
 		int d_min = 1, d_max = 10;
 		int curr_d = d_min;
 
 		bool show_border = false;
-		bool step_flag = false, redraw_flag = true;
+		bool step_flag = false, redraw_flag = true, flush_flag = true;
 
 		// for test only
 		int count = 0;
@@ -48,8 +50,8 @@ namespace grid {
 
 			// for test only
 			father[0][0] = 0;
-			queue = std::vector<std::list<Intermediate>>(d_min + 1);
-			queue[d_min].push_back({0,0,0});
+			queue = std::deque<std::list<Intermediate>>(1);
+			queue.front().push_back({ 0,0,0 });
 			orig.push_back({ 0,0 });
 		}
 
@@ -58,22 +60,23 @@ namespace grid {
 #ifdef _DEBUG
 			//std::cout << ++count << std::endl;
 #endif
-			assert(curr_d < queue.size());
-			while (queue[curr_d].empty()) {
+			assert(!queue.empty());
+			while (queue.front().empty()) {
 				curr_d++;
-				if (curr_d >= queue.size()) {
+				queue.pop_front();
+				if (queue.empty()) {
 					return;
 				}
 			}
-			int cx = queue[curr_d].front().cx, cy = queue[curr_d].front().cy;
+			int cx = queue.front().front().cx, cy = queue.front().front().cy;
 			if (status[cx][cy]) {
-				queue[curr_d].pop_front();
+				queue.front().pop_front();
 				return;
 			}
 			// Finished
 			status[cx][cy] = 1;
 			updated.push_back({ cx,cy });
-			int f = queue[curr_d].front().f;
+			int f = queue.front().front().f;
 			if (f != 0) {
 				// Not origin
 				father[cx][cy] = f;
@@ -106,7 +109,7 @@ namespace grid {
 			if (cy > 0) {
 				push_pos(cx, cy - 1, 3);
 			}
-			queue[curr_d].pop_front();
+			queue.front().pop_front();
 		}
 
 		void push_pos(int cx, int cy, int f) {
@@ -114,14 +117,14 @@ namespace grid {
 				if (!(f % 2) && barrier[size_t(cx) + FATHER[f][0]][cy] && barrier[cx][size_t(cy) + FATHER[f][1]]) {
 					return;
 				}
-				int expected_d = curr_d + (f % 2 ? 2 : 3);
+				int len = f % 2 ? len_straight : len_diagonal, expected_d = curr_d + len;
 				if (distance[cx][cy] != 0 && distance[cx][cy] <= expected_d) {
 					return;
 				}
-				while (queue.size() <= expected_d) {
+				while (queue.size() <= len) {
 					queue.push_back({});
 				}
-				queue[expected_d].push_back({ cx,cy,f });
+				queue[len].push_back({ cx,cy,f });
 				distance[cx][cy] = expected_d;
 			}
 		};
@@ -158,13 +161,13 @@ namespace grid {
 			distance = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
 			redraw_flag = true;
 			d_max = grid_w / 2;
-			queue = std::vector<std::list<Intermediate>>(d_min + 1);
+			queue = std::deque<std::list<Intermediate>>(1);
 			curr_d = d_min;
 			for (auto& p : orig) {
 				int px = p.first, py = p.second;
 				father[px][py] = 0;
 				barrier[px][py] = 0;
-				queue[d_min].push_back({px,py,0});
+				queue.front().push_back({ px,py,0 });
 			}
 		}
 

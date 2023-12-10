@@ -39,13 +39,16 @@ namespace grid {
 
 		void draw() override {
 			//bfs_step();
-			if (step_flag && curr_d < queue.size()) {
-				for (size_t i = 0; i <= step_count && curr_d < queue.size(); i++) {
+			if (step_flag && !queue.empty()) {
+				for (size_t i = 0; i <= step_count && !queue.empty(); i++) {
 					bfs_step();
+				}
+				if (queue.empty()) {
+					flush_flag = true;
 				}
 				step_flag = false;
 			}
-			if (redraw_flag) {
+			if (redraw_flag || flush_flag) {
 				draw_grid();
 				//print_dist();
 				draw_flow(20, 20);
@@ -62,7 +65,12 @@ namespace grid {
 			updated.clear();
 			//fl_begin_offscreen(oscr_grid);
 			//fl_rectf(0, 0, w(), h(), FL_WHITE);
-			bg_white_transparent->draw(x(), y());
+			if (flush_flag) {
+				fl_rectf(x(), y(), w(), h(), FL_WHITE);
+				flush_flag = false;
+			} else {
+				bg_white_transparent->draw(x(), y());
+			}
 			for (size_t i = 0; i < grid_w; i++) {
 				for (size_t j = 0; j < grid_h; j++) {
 					draw_pos(i, j);
