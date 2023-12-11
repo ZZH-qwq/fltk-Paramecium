@@ -8,11 +8,13 @@
 
 #include "fl_grid.h"
 #include "fl_barrier.h"
+#include "fl_paramecium.h"
 
 namespace control {
 
     Fl_Double_Window* win;
     grid::Fl_Barrier* bar;
+    paramecium::Fl_Paramecium* kiana;
     grid::Fl_Grid* g;
 
     class Fl_Event_Handler : public Fl_Box {
@@ -20,7 +22,7 @@ namespace control {
         size_t grid_w, grid_h;
         int pixels_per_grid;
 
-        enum Event_Target { None, Barrier } target = Barrier;
+        enum Event_Target { None, Barrier, Paramercium } target = Barrier;
 
         Fl_Event_Handler(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_),
             grid_w(w_ / g_size), grid_h(h_ / g_size), pixels_per_grid(g_size) {
@@ -52,7 +54,7 @@ namespace control {
             }
         }
 
-        double grid_x() { return (Fl::event_x() - x()) / (double)pixels_per_grid; }
-        double grid_y() { return (Fl::event_y() - y()) / (double)pixels_per_grid; }
+        double grid_x() const { return (Fl::event_x() - x()) / (double)pixels_per_grid; }
+        double grid_y() const { return (Fl::event_y() - y()) / (double)pixels_per_grid; }
     }*handler;
 } // namespace control

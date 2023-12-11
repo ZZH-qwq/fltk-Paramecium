@@ -9,6 +9,8 @@
 
 #include "drawings.h"
 
+#define M_PI 3.14159265358979323846
+
 namespace grid {
 
 	template <typename T>
@@ -38,7 +40,7 @@ namespace grid {
 		int d_min = 1, d_max = 10;
 		int curr_d = d_min;
 
-		bool show_border = false;
+		bool show_border = false, stabled = false;
 		bool step_flag = false, redraw_flag = true, flush_flag = true;
 
 		// for test only
@@ -49,10 +51,14 @@ namespace grid {
 			father(w_, std::vector<int>(h_)), d_max(w_ / 2) {
 
 			// for test only
-			father[0][0] = 0;
+			father[0][0] = father[39][39] = 0;
+			distance[0][0] = distance[39][39] = d_min;
 			queue = std::deque<std::list<Intermediate>>(1);
 			queue.front().push_back({ 0,0,0 });
 			orig.push_back({ 0,0 });
+			// multiple origins
+			queue.front().push_back({ 39,39,0 });
+			orig.push_back({ 39,39 });
 		}
 
 		// A single step for BFS
@@ -68,15 +74,16 @@ namespace grid {
 					return;
 				}
 			}
-			int cx = queue.front().front().cx, cy = queue.front().front().cy;
+			auto& q = queue.front();
+			int cx = q.front().cx, cy = q.front().cy;
 			if (status[cx][cy]) {
-				queue.front().pop_front();
+				q.pop_front();
 				return;
 			}
 			// Finished
 			status[cx][cy] = 1;
 			updated.push_back({ cx,cy });
-			int f = queue.front().front().f;
+			int f = q.front().f;
 			if (f != 0) {
 				// Not origin
 				father[cx][cy] = f;
@@ -109,7 +116,7 @@ namespace grid {
 			if (cy > 0) {
 				push_pos(cx, cy - 1, 3);
 			}
-			queue.front().pop_front();
+			q.pop_front();
 		}
 
 		void push_pos(int cx, int cy, int f) {
@@ -165,11 +172,20 @@ namespace grid {
 			curr_d = d_min;
 			for (auto& p : orig) {
 				int px = p.first, py = p.second;
+				distance[px][py] = d_min;
 				father[px][py] = 0;
 				barrier[px][py] = 0;
 				queue.front().push_back({ px,py,0 });
 			}
 		}
+
+		bool is_barrier(int grid_x, int grid_y) const {
+			return grid_x >= grid_w || grid_x < 0 || grid_y >= grid_h || grid_y < 0 || barrier[grid_x][grid_y] != 0;
+		}
+		bool is_origin(int grid_x, int grid_y) const {
+			return !is_barrier(grid_x, grid_y) && distance[grid_x][grid_y] == d_min;
+		}
+		int get_distance(int grid_x, int grid_y) const { return distance[grid_x][grid_y]; }
 
 		void print_flow() {
 			for (size_t j = 0; j < grid_h; j++) {

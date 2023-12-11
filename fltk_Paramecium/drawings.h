@@ -9,7 +9,7 @@
 
 namespace draw {
 
-	Fl_Color linear_gradient(double s) {
+	Fl_Color rainbow_linear_gradient(double s) {
 		if (s < 0.25) {
 			return fl_rgb_color(255, 510 * s + 128, 128);
 		} else if (s < 0.5) {
@@ -21,7 +21,7 @@ namespace draw {
 		}
 	}
 
-	Fl_Color linear_gradient_base(double s) {
+	Fl_Color rainbow_linear_gradient_base(double s) {
 		if (s < 0.25) {
 			return fl_rgb_color(255, 1020 * s, 0);
 		} else if (s < 0.5) {

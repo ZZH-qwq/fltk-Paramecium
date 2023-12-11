@@ -13,14 +13,15 @@ namespace grid {
 	class Fl_Grid : public Grid, public Fl_Box {
 	public:
 		int pixels_per_grid;
-		//Fl_Offscreen oscr_grid;
+		Fl_Offscreen oscr_grid;
 		const size_t step_count;
 		bool show_distance = true;
 		Fl_Image* bg_white_transparent;
+		Fl_RGB_Image* grid_image = nullptr;
 
 		Fl_Grid(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_), Grid(w_ / g_size, h_ / g_size),
 			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w * grid_h / 20), 1)) {
-			//oscr_grid = fl_create_offscreen(w(), h());
+			oscr_grid = fl_create_offscreen(w(), h());
 			uchar data[4]{ 255,255,255,40 };
 			Fl_RGB_Image img(data, 1, 1, 4);
 			bg_white_transparent = img.copy(w_, h_);
@@ -53,6 +54,9 @@ namespace grid {
 				//print_dist();
 				draw_flow(20, 20);
 				redraw_flag = false;
+			} else if (redraw_flag && stabled && grid_image) {
+				// Not used yet
+				grid_image->draw(x(), y());
 			} else {
 				update_grid();
 			}
@@ -63,20 +67,32 @@ namespace grid {
 
 		void draw_grid() {
 			updated.clear();
-			//fl_begin_offscreen(oscr_grid);
-			//fl_rectf(0, 0, w(), h(), FL_WHITE);
-			if (flush_flag) {
-				fl_rectf(x(), y(), w(), h(), FL_WHITE);
+			bool finished = queue.empty();
+			if (finished || flush_flag) {
+				fl_begin_offscreen(oscr_grid);
+				fl_rectf(0, 0, w(), h(), FL_WHITE);
+				for (size_t i = 0; i < grid_w; i++) {
+					for (size_t j = 0; j < grid_h; j++) {
+						draw_pos(i, j, true);
+					}
+				}
+				auto data = fl_read_image(nullptr, 0, 0, w(), h());
+				if (grid_image) {
+					delete grid_image;
+				}
+				grid_image = new Fl_RGB_Image(data, w(), h());
+				grid_image->draw(0, 0);
+				fl_end_offscreen();
+				fl_copy_offscreen(x(), y(), w(), h(), oscr_grid, 0, 0);
 				flush_flag = false;
 			} else {
 				bg_white_transparent->draw(x(), y());
-			}
-			for (size_t i = 0; i < grid_w; i++) {
-				for (size_t j = 0; j < grid_h; j++) {
-					draw_pos(i, j);
+				for (size_t i = 0; i < grid_w; i++) {
+					for (size_t j = 0; j < grid_h; j++) {
+						draw_pos(i, j);
+					}
 				}
 			}
-			//fl_end_offscreen();
 			//fl_copy_offscreen(x(), y(), w(), h(), oscr_grid, 0, 0);
 		}
 
@@ -87,11 +103,11 @@ namespace grid {
 			fl_color(FL_RED);
 			fl_line_style(FL_SOLID, 3);
 			fl_begin_line();
-			int f = father[px][py];
+			int f = 1;
 			while (f > 0) {
 				fl_vertex(x() + px * pixels_per_grid + pixels_per_grid / 2.0, y() + py * pixels_per_grid + pixels_per_grid / 2.0);
-				px = px + FATHER[f][0], py = py + FATHER[f][1];
 				f = father[px][py];
+				px = px + FATHER[f][0], py = py + FATHER[f][1];
 			}
 			fl_end_line();
 		}
@@ -109,7 +125,7 @@ namespace grid {
 			} else if (status[cx][cy] == 1 && show_distance) {
 				double l = 1 - exp(-(distance[cx][cy] - d_min) / double(d_max) * 1.5);
 				//std::cout << l << std::endl;
-				fl_color(draw::linear_gradient(l));
+				fl_color(draw::rainbow_linear_gradient(l));
 			} else {
 				return;
 			}

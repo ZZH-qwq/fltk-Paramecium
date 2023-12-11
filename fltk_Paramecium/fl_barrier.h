@@ -59,15 +59,17 @@ namespace grid {
                 if (has_temp) {
                     ed_x = grid_x;
                     ed_y = grid_y;
+                    return 1;
                 }
-                return 1;
+                return 0;
             }
             case FL_LEAVE: {
                 if (has_temp) {
                     ed_x = st_x;
                     ed_y = st_y;
+                    return 1;
                 }
-                return 1;
+                return 0;
             }
             case FL_PUSH: {
 #ifdef _DEBUG
@@ -96,12 +98,13 @@ namespace grid {
                     if (has_temp) {
                         has_temp = false;
                         g->show_border = false;
-                        return 0;
+                        return 1;
                     }
                     // return remove_barrier_for(g, grid_x, grid_y);
                     auto rm = remove_barrier_for(g, grid_x, grid_y);
                     if (rm == 0) {
                         g->draw_flow(grid_x, grid_y);
+                        return 1;
                     }
                     return rm;
                     break;

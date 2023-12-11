@@ -12,6 +12,7 @@
 #include <tuple>
 #include <iostream>
 #include <cmath>
+#include <random>
 #include <algorithm>
 #include <cassert>
 
@@ -19,10 +20,9 @@
 
 
 void timeout_cb(void*) {
-    /*if (!control::g->queue.empty()) {
-        control::g->bfs_step();
-    }*/
-    control::g->step_flag = true;
+    if (!control::g->queue.empty()) {
+        control::g->step_flag = true;
+    }
     Fl::repeat_timeout(0.001, timeout_cb);
 }
 
@@ -33,6 +33,8 @@ int main() {
     control::win->color(FL_LIGHT3);
     control::g = new grid::Fl_Grid(x, y, w, h, g_size);
     control::bar = new grid::Fl_Barrier(x, y, w, h, g_size);
+    control::kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
+    control::kiana->g = control::g;
     control::handler = new control::Fl_Event_Handler(x, y, w, h, g_size);
     control::win->end();
     control::win->show();
@@ -43,6 +45,7 @@ int main() {
         }*/
         control::g->redraw();
         control::bar->redraw();
+        control::kiana->redraw();
         auto nWin = Fl::wait();
         if (nWin == 0) {
             break;

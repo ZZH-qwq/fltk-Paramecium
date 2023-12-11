@@ -38,5 +38,11 @@
     <ClInclude Include="drawings.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="paramecium.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fl_paramecium.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
