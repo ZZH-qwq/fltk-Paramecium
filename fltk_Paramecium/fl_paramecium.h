@@ -16,7 +16,14 @@ namespace paramecium {
 		}
 
 		void draw() {
-			simulate({ Forward,0,20,20,0 });
+			if (!enable_simulate) {
+				return;
+			}
+			if (resimulate_flag) {
+				steps.clear();
+				simulate({ Forward,0,20,20,0 });
+				resimulate_flag = false;
+			}
 			fl_color(FL_BLUE);
 			fl_line_style(FL_SOLID, 3);
 			fl_begin_line();
@@ -25,7 +32,6 @@ namespace paramecium {
 				fl_vertex(px * pixels_per_grid, py * pixels_per_grid);
 			}
 			fl_end_line();
-			steps.clear();
 		}
 	};
 } // namespace paramecium

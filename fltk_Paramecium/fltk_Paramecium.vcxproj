@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="barrier.h" />
+    <ClInclude Include="control.h" />
     <ClInclude Include="drawings.h" />
     <ClInclude Include="fl_barrier.h" />
     <ClInclude Include="fl_event_handler.h" />

@@ -22,7 +22,7 @@ namespace control {
         size_t grid_w, grid_h;
         int pixels_per_grid;
 
-        enum Event_Target { None, Barrier, Paramercium } target = Barrier;
+        enum Event_Target { None, Barrier, Paramecium } target = Barrier;
 
         Fl_Event_Handler(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_),
             grid_w(w_ / g_size), grid_h(h_ / g_size), pixels_per_grid(g_size) {
@@ -44,8 +44,14 @@ namespace control {
 
         void send_redraw() {
             switch (target) {
-            case 1: {
+            case Barrier: {
                 bar->redraw_flag = true;
+                g->redraw_flag = true;
+                kiana->resimulate_flag = true;
+                break;
+            }
+            case Paramecium: {
+                kiana->redraw_flag = true;
                 g->redraw_flag = true;
                 break;
             }

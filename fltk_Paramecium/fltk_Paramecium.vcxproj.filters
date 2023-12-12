@@ -44,5 +44,8 @@
     <ClInclude Include="fl_paramecium.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="control.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

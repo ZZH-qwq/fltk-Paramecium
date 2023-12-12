@@ -16,9 +16,10 @@ namespace paramecium {
 		int step_count = 500;
 		double step_length = 0.5, rotate_radius = 0.5, rotate_mean = 0, rotate_variance = 0.1;
 
-		bool resimulate_flag = false;
+		bool redraw_flag = true, enable_simulate = false;
+		bool resimulate_flag = true;
 		
-		enum Step_type { Forward, Backward, Rotate };
+		enum Step_type { Forward, Backward, Rotate, Failed, Found };
 		struct Step_Info {
 			Step_type type;
 			double amount;
@@ -27,10 +28,6 @@ namespace paramecium {
 		std::list<Step_Info> steps;
 
 		void simulate(Step_Info s) {
-			if (resimulate_flag) {
-				steps.clear();
-				resimulate_flag = false;
-			}
 			if (!g->queue.empty()) {
 				steps.clear();
 				return;
@@ -54,16 +51,21 @@ namespace paramecium {
 						continue;
 					}
 				}
-				double ox = px, oy = py, orad = rad;
-				do {
-					px = ox - step_length * cos(rad);
-					py = oy - step_length * sin(rad);
-					rad = orad - dr(e);
-					gx = std::floor(px), gy = std::floor(py);
-				} while (g->is_barrier(gx, gy));
+				px -= step_length * cos(rad);
+				py -= step_length * sin(rad);
+				rad -= dr(e);
+				gx = std::floor(px), gy = std::floor(py);
+				if (g->is_barrier(gx, gy)) {
+					steps.push_back({ Failed,0,px,py,rad });
+					return;
+				}
 				steps.push_back({ Backward,step_length,px,py,rad });
 				rad += rotate_radius + dr(e);
 				steps.push_back({ Rotate,step_length,px,py,rad });
+			}
+			if (g->is_origin(gx, gy)) {
+				steps.push_back({ Found,0,px,py,rad });
+				return;
 			}
 		}
 	};
