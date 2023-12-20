@@ -23,6 +23,9 @@
 static void timeout_cb(void*) {
     if (!control::g->queue.empty()) {
         control::g->step_flag = true;
+    } else if (!control::kiana->has_temp) {
+        control::g->redraw_flag = true;
+        control::kiana->step_flag = true;
     }
     Fl::repeat_timeout(0.001, timeout_cb);
 }
@@ -30,6 +33,7 @@ static void timeout_cb(void*) {
 int main() {
     Fl::scheme("gtk+");
     Fl::background(233, 233, 233);
+    Fl::visual(FL_DOUBLE | FL_RGB);
     const int w = 800, h = 800, x = 0, y = 0, g_size = 20;
 
     control::win = new Fl_Double_Window(w + 200, h, "Paramecium");

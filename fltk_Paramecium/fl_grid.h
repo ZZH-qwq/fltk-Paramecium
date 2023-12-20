@@ -49,10 +49,10 @@ namespace grid {
 				}
 				step_flag = false;
 			}
-			if (redraw_flag || flush_flag) {
+			if ((redraw_flag || flush_flag) && !stabled) {
 				draw_grid();
 				//print_dist();
-				draw_flow(20, 20);
+				//draw_flow(20, 20);
 				redraw_flag = false;
 			} else if (redraw_flag && stabled && grid_image) {
 				// Not used yet

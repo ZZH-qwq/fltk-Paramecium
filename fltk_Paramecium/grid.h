@@ -51,14 +51,11 @@ namespace grid {
 			father(w_, std::vector<int>(h_)), d_max(w_ / 2) {
 
 			// for test only
-			father[0][0] = father[39][39] = 0;
-			distance[0][0] = distance[39][39] = d_min;
+			father[0][0] = 0;
+			distance[0][0] = d_min;
 			queue = std::deque<std::list<Intermediate>>(1);
 			queue.front().push_back({ 0,0,0 });
 			orig.push_back({ 0,0 });
-			// multiple origins
-			queue.front().push_back({ 39,39,0 });
-			orig.push_back({ 39,39 });
 		}
 
 		// A single step for BFS

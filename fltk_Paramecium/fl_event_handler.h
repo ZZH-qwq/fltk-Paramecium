@@ -36,6 +36,11 @@ namespace control {
                     return 1;
                 }
                 break;
+            case Paramecium:
+                if (kiana->handle_place_paramecium(event, g, grid_x(), grid_y()) == 1) {
+                    send_redraw();
+                    return 1;
+                }
             default:
                 break;
             }
@@ -48,6 +53,7 @@ namespace control {
                 bar->redraw_flag = true;
                 g->redraw_flag = true;
                 kiana->resimulate_flag = true;
+                kiana->redraw_flag = true;
                 break;
             }
             case Paramecium: {

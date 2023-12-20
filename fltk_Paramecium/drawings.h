@@ -9,6 +9,21 @@
 
 namespace draw {
 
+	void draw_paramecium(double x, double y, double r, double size) {
+		fl_color(0x33cc6600);
+		fl_begin_polygon();
+		double dx1 = cos(r + 0.5) * size, dx2 = cos(r - 0.5) * size, dy1 = sin(r + 0.5) * size, dy2 = sin(r - 0.5) * size;
+		fl_vertex(x + dx1, y + dy1);
+		fl_vertex(x + dx2, y + dy2);
+		fl_vertex(x - dx1, y - dy1);
+		fl_vertex(x - dx2, y - dy2);
+		fl_end_polygon();
+	}
+
+	Fl_Color path_linear_gradient(double s) {
+		return fl_rgb_color(255 * s, 255 * s, 255);
+	}
+
 	Fl_Color rainbow_linear_gradient(double s) {
 		if (s < 0.25) {
 			return fl_rgb_color(255, 510 * s + 128, 128);

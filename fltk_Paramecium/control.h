@@ -30,7 +30,8 @@ namespace control {
 #endif // _DEBUG
 				handler->target = Fl_Event_Handler::Barrier;
 				kiana->enable_simulate = false;
-				kiana->resimulate_flag = true;
+				kiana->has_temp = false;
+				g->stabled = false;
 				bar->show();
 				break;
 			case 2:
@@ -39,7 +40,7 @@ namespace control {
 #endif // _DEBUG
 				handler->target = Fl_Event_Handler::Paramecium;
 				kiana->enable_simulate = true;
-				kiana->resimulate_flag = true;
+				g->stabled = true;
 				bar->hide();
 				break;
 			}
