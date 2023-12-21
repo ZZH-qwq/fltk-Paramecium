@@ -9,8 +9,8 @@
 
 namespace draw {
 
-	void draw_paramecium(double x, double y, double r, double size) {
-		fl_color(0x33cc6600);
+	void draw_paramecium(double x, double y, double r, double size, double back = 0) {
+		fl_color(fl_rgb_color(0x33 + 0x99 * back, 0xcc - 0x99 * back, 0x66));
 		fl_begin_polygon();
 		double dx1 = cos(r + 0.5) * size, dx2 = cos(r - 0.5) * size, dy1 = sin(r + 0.5) * size, dy2 = sin(r - 0.5) * size;
 		fl_vertex(x + dx1, y + dy1);

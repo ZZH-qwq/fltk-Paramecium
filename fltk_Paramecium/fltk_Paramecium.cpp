@@ -23,7 +23,7 @@
 static void timeout_cb(void*) {
     if (!control::g->queue.empty()) {
         control::g->step_flag = true;
-    } else if (!control::kiana->has_temp) {
+    } else if (!control::kiana->has_temp && control::kiana->enable_simulate) {
         control::g->redraw_flag = true;
         control::kiana->step_flag = true;
     }

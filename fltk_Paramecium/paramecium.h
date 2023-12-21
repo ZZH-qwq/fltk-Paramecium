@@ -13,7 +13,7 @@ namespace paramecium {
 	class Paramecium {
 	public:
 		grid::Grid* g;
-		int step_count = 500, retry_count = 20, min_steps = step_count - 50;
+		int step_count = 500, retry_count = 1000, min_steps = step_count - 50;
 		double step_length = 0.5, rotate_radius = 0.5, rotate_mean = 0, rotate_variance = 0.1;
 
 		bool redraw_flag = true, enable_simulate = false, step_flag = false, has_temp = false;
@@ -73,6 +73,7 @@ namespace paramecium {
 				if (c == retry_count) {
 					steps.push_back({ Failed,0,px,py,rad });
 #ifdef _DEBUG
+					// Paramecium may "stuck in wall" which cause failure
 					std::cout << "Simulation Failed" << std::endl;
 #endif // _DEBUG
 					return;

@@ -9,9 +9,10 @@ namespace paramecium {
 	public:
 		double px, py, rad, temp_x, temp_y, temp_rad;
         int steps_completed = 0, updates = 0;
+        int curr_back = 0;
 
-        int pixels_per_grid, updates_per_step = 10;
-        double update_factor = 40;
+        int pixels_per_grid, updates_per_step = 10, back_cd = 6;
+        double update_factor = 30;
 
 		Fl_Paramecium(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), pixels_per_grid(g_size) {
             temp_x = temp_y = px = py = 20;
@@ -58,11 +59,18 @@ namespace paramecium {
                     temp_x = steps.front().x, temp_y = steps.front().y, temp_rad = steps.front().rad;
                     steps.pop_front();
                     ++steps_completed;
-                    updates_per_step = update_factor * (exp(-std::min((int)steps.size(), std::min(min_steps, 2 * steps_completed)) / 50.0) + 0.1);
+                    if (!steps.empty() && steps.front().type == Backward) {
+                        steps.pop_front();
+                        ++steps_completed;
+                        curr_back = back_cd;
+                    } else if (curr_back > 0) {
+                        curr_back--;
+                    }
+                    updates_per_step = update_factor * exp(-std::min((int)steps.size(), std::min(min_steps, 2 * steps_completed)) / 75.0) + 3;
                     updates = 0;
                 }
             }
-            draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid);
+            draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid, curr_back / (double)back_cd);
 		}
 
         int handle_place_paramecium(int event, grid::Fl_Grid* g, double grid_x, double grid_y) {
