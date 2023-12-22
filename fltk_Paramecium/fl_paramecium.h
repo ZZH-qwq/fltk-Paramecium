@@ -33,15 +33,15 @@ namespace paramecium {
 			}
 			if (resimulate_flag) {
 				steps.clear();
-				simulate({ Forward,0,px,py,init_r(e)});
+				simulate_steps({ Forward,0,px,py,init_r(e)});
                 steps_completed = 0;
 				resimulate_flag = false;
 			} else if (!steps.empty()) {
-				simulate(steps.back());
+				simulate_steps(steps.back());
 			}
 			fl_color(FL_BLUE);
             int c = 0;
-            double sx = px * pixels_per_grid, sy = py * pixels_per_grid, sz = std::min(min_steps, 2 * steps_completed);
+            double sx = px * pixels_per_grid, sy = py * pixels_per_grid, sz = std::min(min_list_len, 2 * steps_completed);
 			for (auto& s : steps) {
                 fl_color(draw::path_linear_gradient(c / sz));
                 fl_line_style(FL_SOLID, 3);
@@ -66,10 +66,21 @@ namespace paramecium {
                     } else if (curr_back > 0) {
                         curr_back--;
                     }
-                    updates_per_step = update_factor * exp(-std::min((int)steps.size(), std::min(min_steps, 2 * steps_completed)) / 75.0) + 3;
+                    updates_per_step = update_factor * exp(-std::min((int)steps.size(), std::min(min_list_len, 2 * steps_completed)) / 75.0) + 3;
                     updates = 0;
                 }
             }
+            auto sim = simulate_score();
+            score_sum += sim.score;
+            simulation_count++;
+            if (sim.result == Found) {
+                ++success_count;
+            }
+#ifdef _DEBUG
+            std::cout << (sim.result == Found ? "Found\t" : "Failed\t") << sim.score << "\t" << sim.energy_used << std::endl;
+            std::cout << score_sum / simulation_count << "\t" << (double)success_count / simulation_count << std::endl;
+#endif // _DEBUG
+            draw::draw_paramecium_indicator(st_x * pixels_per_grid, st_y * pixels_per_grid, st_rad, pixels_per_grid);
             draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid, curr_back / (double)back_cd);
 		}
 
@@ -105,8 +116,11 @@ namespace paramecium {
                     return 0;
                 }
                 if (has_temp) {
-                    px = temp_x;
-                    py = temp_y;
+                    st_x = px = temp_x;
+                    st_y = py = temp_y;
+                    st_rad = rad;
+                    simulation_count = success_count = 0;
+                    score_sum = 0;
                     g->show_border = false;
                     has_temp = false;
                     resimulate_flag = true;
