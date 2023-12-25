@@ -7,6 +7,7 @@
  */
 
 #include "barrier.h"
+#include "paramecium.h"
 
 namespace grid {
 
@@ -50,7 +51,7 @@ namespace grid {
             }
         }
 
-        int handle_add_line(int event, Fl_Grid* g, double grid_x, double grid_y) {
+        int handle_add_line(int event, Fl_Grid* g, paramecium::Paramecium* p, double grid_x, double grid_y) {
             switch (event) {
             case FL_ENTER: {
                 return 1;
@@ -85,6 +86,7 @@ namespace grid {
                 case FL_LEFT_MOUSE: {
                     if (has_temp) {
                         add_barrier_for(g);
+                        p->reset_status();
                         g->show_border = false;
                     } else {
                         has_temp = true;
@@ -106,6 +108,7 @@ namespace grid {
                         g->draw_flow(grid_x, grid_y);
                         return 1;
                     }
+                    p->reset_status();
                     return rm;
                     break;
                 }

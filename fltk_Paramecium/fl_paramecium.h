@@ -5,52 +5,55 @@
 
 namespace paramecium {
 
-	class Fl_Paramecium : public Fl_Widget, public Paramecium {
-	public:
-		double px, py, rad, temp_x, temp_y, temp_rad;
+    class Fl_Paramecium : public Fl_Widget, public Paramecium {
+    public:
+        double px, py, rad, temp_x, temp_y, temp_rad;
         int steps_completed = 0, updates = 0;
         int curr_back = 0;
 
         int pixels_per_grid, updates_per_step = 10, back_cd = 6;
         double update_factor = 30;
 
-		Fl_Paramecium(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), pixels_per_grid(g_size) {
-            temp_x = temp_y = px = py = 20;
-			rad = 0;
-		}
+        Fl_Output* score_op = nullptr, * rate_op = nullptr;
+        Fl_Hor_Value_Slider* step_len_ip = nullptr, * rotate_rad_ip = nullptr;
 
-		void draw() {
-			if (!redraw_flag) {
-				return;
-			}
+        Fl_Paramecium(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), pixels_per_grid(g_size) {
+            temp_x = temp_y = px = py = 20;
+            temp_rad = rad = 0;
+        }
+
+        void draw() {
+            if (!redraw_flag) {
+                return;
+            }
             if (has_temp) {
                 draw::draw_paramecium(temp_x * pixels_per_grid, temp_y * pixels_per_grid, rad, pixels_per_grid);
                 return;
             }
-			if (!enable_simulate) {
+            if (!enable_simulate) {
                 draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid);
-				return;
-			}
-			if (resimulate_flag) {
-				steps.clear();
-				simulate_steps({ Forward,0,px,py,init_r(e)});
+                return;
+            }
+            if (resimulate_flag) {
+                steps.clear();
+                simulate_steps({ Forward,0,px,py,init_r(e) });
                 steps_completed = 0;
-				resimulate_flag = false;
-			} else if (!steps.empty()) {
-				simulate_steps(steps.back());
-			}
-			fl_color(FL_BLUE);
+                resimulate_flag = false;
+            } else if (!steps.empty()) {
+                simulate_steps(steps.back());
+            }
+            fl_color(FL_BLUE);
             int c = 0;
             double sx = px * pixels_per_grid, sy = py * pixels_per_grid, sz = std::min(min_list_len, 2 * steps_completed);
-			for (auto& s : steps) {
+            for (auto& s : steps) {
                 fl_color(draw::path_linear_gradient(c / sz));
                 fl_line_style(FL_SOLID, 3);
-				fl_line(sx,sy, s.x * pixels_per_grid, s.y * pixels_per_grid);
+                fl_line(sx, sy, s.x * pixels_per_grid, s.y * pixels_per_grid);
                 sx = s.x * pixels_per_grid, sy = s.y * pixels_per_grid;
                 if (++c > sz) {
                     break;
                 }
-			}
+            }
             if (step_flag && !steps.empty()) {
                 px = (steps.front().x * updates + temp_x * (updates_per_step - updates)) / updates_per_step;
                 py = (steps.front().y * updates + temp_y * (updates_per_step - updates)) / updates_per_step;
@@ -70,19 +73,29 @@ namespace paramecium {
                     updates = 0;
                 }
             }
+            if (step_flag && steps.empty()) {
+                reset_pos();
+                resimulate_flag = true;
+            }
             auto sim = simulate_score();
+            if (simulation_count % 25 == 24) {
+                score_op->value(std::to_string(score_sum / simulation_count).c_str());
+                rate_op->value((std::to_string(100.0 * success_count / simulation_count) + " %").c_str());
+            }
             score_sum += sim.score;
             simulation_count++;
             if (sim.result == Found) {
                 ++success_count;
             }
 #ifdef _DEBUG
-            std::cout << (sim.result == Found ? "Found\t" : "Failed\t") << sim.score << "\t" << sim.energy_used << std::endl;
-            std::cout << score_sum / simulation_count << "\t" << (double)success_count / simulation_count << std::endl;
+            //std::cout << (sim.result == Found ? "Found\t" : "Failed\t") << sim.score << "\t" << sim.energy_used << std::endl;
+            //std::cout << score_sum / simulation_count << "\t" << (double)success_count / simulation_count << std::endl;
 #endif // _DEBUG
             draw::draw_paramecium_indicator(st_x * pixels_per_grid, st_y * pixels_per_grid, st_rad, pixels_per_grid);
             draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid, curr_back / (double)back_cd);
-		}
+        }
+
+        void reset_pos() { px = st_x, py = st_y, rad = init_r(e); }
 
         int handle_place_paramecium(int event, grid::Fl_Grid* g, double grid_x, double grid_y) {
             switch (event) {
@@ -116,14 +129,13 @@ namespace paramecium {
                     return 0;
                 }
                 if (has_temp) {
-                    st_x = px = temp_x;
-                    st_y = py = temp_y;
+                    st_x = temp_x;
+                    st_y = temp_y;
                     st_rad = rad;
-                    simulation_count = success_count = 0;
-                    score_sum = 0;
+                    reset_status();
+                    reset_pos();
                     g->show_border = false;
                     has_temp = false;
-                    resimulate_flag = true;
                 } else {
                     has_temp = true;
                     temp_x = grid_x;
@@ -135,5 +147,21 @@ namespace paramecium {
             }
             return Fl_Widget::handle(event);
         }
-	};
+    };
+
+    static void step_len_cb(Fl_Widget* o, void* v) {
+        Fl_Slider* s = (Fl_Slider*)o;
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->step_length = s->value();
+        p->reset_status();
+        p->reset_pos();
+    }
+
+    static void rotate_rad_cb(Fl_Widget* o, void* v) {
+        Fl_Slider* s = (Fl_Slider*)o;
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->rotate_radius = s->value();
+        p->reset_status();
+        p->reset_pos();
+    }
 } // namespace paramecium

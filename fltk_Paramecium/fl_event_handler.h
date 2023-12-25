@@ -31,7 +31,7 @@ namespace control {
         int handle(int event) override {
             switch (target) {
             case Barrier:
-                if (bar->handle_add_line(event, g, grid_x(), grid_y()) == 1) {
+                if (bar->handle_add_line(event, g, kiana, grid_x(), grid_y()) == 1) {
                     send_redraw();
                     return 1;
                 }

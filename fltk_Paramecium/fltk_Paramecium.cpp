@@ -4,6 +4,8 @@
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_RGB_Image.H>
 #include <FL/Fl_Box.H>
+#include <FL/Fl_Output.H>
+#include <FL/Fl_Hor_Value_Slider.H>
 #include <FL/fl_draw.H> 
 
 #include <vector>
@@ -11,7 +13,9 @@
 #include <deque>
 #include <set>
 #include <tuple>
+#include <string>
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include <random>
 #include <algorithm>
@@ -36,14 +40,14 @@ int main() {
     Fl::visual(FL_DOUBLE | FL_RGB);
     const int w = 800, h = 800, x = 0, y = 0, g_size = 20;
 
-    control::win = new Fl_Double_Window(w + 200, h, "Paramecium");
+    control::win = new Fl_Double_Window(w + 300, h, "Paramecium");
     control::win->color(FL_LIGHT3);
     control::g = new grid::Fl_Grid(x, y, w, h, g_size);
     control::bar = new grid::Fl_Barrier(x, y, w, h, g_size);
     control::kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
     control::kiana->g = control::g;
     control::handler = new control::Fl_Event_Handler(x, y, w, h, g_size);
-    control::control = new control::Fl_Control(w, y, 200, h);
+    control::control = new control::Fl_Control(w, y, 300, h);
     control::win->end();
     control::win->show();
     Fl::add_timeout(0.05, timeout_cb);
@@ -54,6 +58,7 @@ int main() {
         control::g->redraw();
         control::bar->redraw();
         control::kiana->redraw();
+        control::control->redraw();
         auto nWin = Fl::wait();
         if (nWin == 0) {
             break;

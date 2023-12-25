@@ -91,7 +91,7 @@ namespace paramecium {
 			double score, energy_used;
 		};
 
-		double total_energy = 500, origin_bonus = 0.2;
+		double total_energy = 500, origin_bonus = 0.5, base_usage = 1;
 		double score_sum = 0;
 		int simulation_count = 0, success_count = 0, simulation_time = 500;
 
@@ -110,8 +110,8 @@ namespace paramecium {
 					curr_dist = g->get_distance(gx, gy);
 					if (curr_dist <= prev_dist || curr_dist == 0) {
 						step_forward(px, rad, py, gx, gy);
-						energy_used += step_length;
-						score += step_length * exp(-curr_dist);
+						energy_used += step_length + base_usage / 10;
+						score += std::max(step_length * exp(-curr_dist) * 10 - base_usage / curr_dist, 0.0);
 						continue;
 					}
 				}
@@ -122,10 +122,6 @@ namespace paramecium {
 					++c;
 				} while (c < retry_count && g->is_barrier(gx, gy));
 				if (c == retry_count) {
-#ifdef _DEBUG
-					// Paramecium may "stuck in wall" which cause failure
-					std::cout << "Simulation Failed" << std::endl;
-#endif // _DEBUG
 					return { Failed,score,energy_used };
 				}
 				energy_used += (c + 1) / 2.0 * step_length;
@@ -138,7 +134,14 @@ namespace paramecium {
 			}
 			return { Failed,score,energy_used };
 		}
+		
+		void reset_status() {
+			resimulate_flag = true, has_temp = false;
+			score_sum = 0;
+			simulation_count = success_count = 0;
+		}
 
+		private:
 		void step_forward(double& px, double& rad, double& py, int& gx, int& gy) {
 			px += step_length * cos(rad);
 			py += step_length * sin(rad);
