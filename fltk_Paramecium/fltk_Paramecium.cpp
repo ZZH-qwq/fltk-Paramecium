@@ -5,6 +5,7 @@
 #include <FL/Fl_RGB_Image.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Output.H>
+#include <FL/Fl_Button.H>
 #include <FL/Fl_Hor_Value_Slider.H>
 #include <FL/fl_draw.H> 
 
@@ -44,6 +45,7 @@ int main() {
     control::win->color(FL_LIGHT3);
     control::g = new grid::Fl_Grid(x, y, w, h, g_size);
     control::bar = new grid::Fl_Barrier(x, y, w, h, g_size);
+    control::orig = new grid::Fl_Origin(x, y, w, h, g_size);
     control::kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
     control::kiana->g = control::g;
     control::handler = new control::Fl_Event_Handler(x, y, w, h, g_size);
@@ -57,6 +59,7 @@ int main() {
         }*/
         control::g->redraw();
         control::bar->redraw();
+        control::orig->redraw();
         control::kiana->redraw();
         control::control->redraw();
         auto nWin = Fl::wait();

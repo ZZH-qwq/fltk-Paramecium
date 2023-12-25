@@ -12,14 +12,20 @@ namespace paramecium {
         int curr_back = 0;
 
         int pixels_per_grid, updates_per_step = 10, back_cd = 6;
-        double update_factor = 30;
+        double update_factor = 20;
 
-        Fl_Output* score_op = nullptr, * rate_op = nullptr;
-        Fl_Hor_Value_Slider* step_len_ip = nullptr, * rotate_rad_ip = nullptr;
+        Fl_Box* op_bg;
+        Fl_Output* score_op, * rate_op;
+        Fl_Button* reset_pos_bt, * default_val_bt;
+        Fl_Hor_Value_Slider* total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip;
 
         Fl_Paramecium(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), pixels_per_grid(g_size) {
             temp_x = temp_y = px = py = 20;
             temp_rad = rad = 0;
+            op_bg = nullptr;
+            score_op = rate_op = nullptr;
+            reset_pos_bt = default_val_bt = nullptr;
+            total_energy_ip = step_len_ip = rotate_rad_ip = deviation_m_ip = deviation_v_ip = nullptr;
         }
 
         void draw() {
@@ -69,7 +75,7 @@ namespace paramecium {
                     } else if (curr_back > 0) {
                         curr_back--;
                     }
-                    updates_per_step = update_factor * exp(-std::min((int)steps.size(), std::min(min_list_len, 2 * steps_completed)) / 75.0) + 3;
+                    updates_per_step = update_factor * (1.2 - std::min((int)steps.size(), std::min(min_list_len, 2 * steps_completed)) / (double)min_list_len) * step_length + 1;
                     updates = 0;
                 }
             }
@@ -78,12 +84,13 @@ namespace paramecium {
                 resimulate_flag = true;
             }
             auto sim = simulate_score();
-            if (simulation_count % 25 == 24) {
-                score_op->value(std::to_string(score_sum / simulation_count).c_str());
-                rate_op->value((std::to_string(100.0 * success_count / simulation_count) + " %").c_str());
-            }
             score_sum += sim.score;
             simulation_count++;
+            if (simulation_count % 25 == 0) {
+                op_bg->copy_label((std::to_string(simulation_count) + " Samples Simulated").c_str());
+                score_op->value((" " + std::to_string(score_sum / simulation_count)).c_str());
+                rate_op->value((" " + std::to_string(100.0 * success_count / simulation_count) + " %").c_str());
+            }
             if (sim.result == Found) {
                 ++success_count;
             }
@@ -125,7 +132,7 @@ namespace paramecium {
                 return 1;
             }
             case FL_RELEASE: {
-                if (!Fl::event_is_click()) {
+                if (!Fl::event_is_click() || !(Fl::event_button() == FL_LEFT_MOUSE)) {
                     return 0;
                 }
                 if (has_temp) {
@@ -149,6 +156,14 @@ namespace paramecium {
         }
     };
 
+    static void total_energy_cb(Fl_Widget* o, void* v) {
+        Fl_Slider* s = (Fl_Slider*)o;
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->total_energy = s->value();
+        p->reset_status();
+        p->reset_pos();
+    }
+
     static void step_len_cb(Fl_Widget* o, void* v) {
         Fl_Slider* s = (Fl_Slider*)o;
         Fl_Paramecium* p = (Fl_Paramecium*)v;
@@ -161,6 +176,48 @@ namespace paramecium {
         Fl_Slider* s = (Fl_Slider*)o;
         Fl_Paramecium* p = (Fl_Paramecium*)v;
         p->rotate_radius = s->value();
+        p->reset_status();
+        p->reset_pos();
+    }
+
+    static void reset_pos_cb(Fl_Widget* o, void* v) {
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->reset_pos();
+        p->resimulate_flag = true;
+    }
+
+    static void default_val_cb(Fl_Widget* o, void* v) {
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->total_energy_ip->value(500);
+        p->total_energy = 500;
+        p->step_len_ip->value(0.5);
+        p->step_length = 0.5;
+        p->rotate_rad_ip->value(0.5);
+        p->rotate_radius = 0.5;
+        p->deviation_m_ip->value(0);
+        p->deviation_mean = 0;
+        p->deviation_v_ip->value(0.01);
+        p->deviation_variance = 0.1;
+        p->dr = std::normal_distribution<double>(p->deviation_mean, p->deviation_variance);
+        p->reset_status();
+        p->reset_pos();
+        p->resimulate_flag = true;
+    }
+
+    static void deviation_m_cb(Fl_Widget* o, void* v) {
+        Fl_Slider* s = (Fl_Slider*)o;
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->deviation_mean = s->value();
+        p->dr = std::normal_distribution<double>(p->deviation_mean, p->deviation_variance);
+        p->reset_status();
+        p->reset_pos();
+    }
+
+    static void deviation_v_cb(Fl_Widget* o, void* v) {
+        Fl_Slider* s = (Fl_Slider*)o;
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        p->deviation_variance = s->value();
+        p->dr = std::normal_distribution<double>(p->deviation_mean, p->deviation_variance);
         p->reset_status();
         p->reset_pos();
     }

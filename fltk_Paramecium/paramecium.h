@@ -12,9 +12,9 @@ namespace paramecium {
 
 	class Paramecium {
 	public:
-		grid::Grid* g;
+		grid::Grid* g = nullptr;
 		int list_len = 500, retry_count = 1000, min_list_len = list_len - 50;
-		double step_length = 0.5, rotate_radius = 0.5, rotate_mean = 0, rotate_variance = 0.1;
+		double step_length = 0.5, rotate_radius = 0.5, deviation_mean = 0, deviation_variance = 0.1;
 
 		bool redraw_flag = true, enable_simulate = false, step_flag = false, has_temp = false;
 		bool resimulate_flag = true;
@@ -25,7 +25,7 @@ namespace paramecium {
 		std::uniform_real_distribution<double> init_r;
 		std::normal_distribution<double> dr;
 
-		Paramecium() : init_r(0, 2 * M_PI), dr(rotate_mean, rotate_variance) {
+		Paramecium() : init_r(0, 2 * M_PI), dr(deviation_mean, deviation_variance) {
 			st_x = st_y = 20, st_rad = 0;
 		}
 

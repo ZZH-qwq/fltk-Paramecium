@@ -160,6 +160,10 @@ namespace grid {
 
 		void remove_barrier(int x, int y) { barrier[x][y] = 0; }
 
+		void clear_barrier() { barrier = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h, 0)); }
+
+		void clear_orig() { orig.clear(); }
+
 		void clear_status() {
 			status = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
 			distance = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
