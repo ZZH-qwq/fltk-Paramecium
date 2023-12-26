@@ -6,6 +6,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Output.H>
 #include <FL/Fl_Button.H>
+#include <FL/Fl_Float_Input.H>
 #include <FL/Fl_Hor_Value_Slider.H>
 #include <FL/fl_draw.H> 
 
@@ -21,6 +22,7 @@
 #include <random>
 #include <algorithm>
 #include <cassert>
+#include <climits>
 
 #include "control.h"
 
@@ -48,8 +50,12 @@ int main() {
     control::orig = new grid::Fl_Origin(x, y, w, h, g_size);
     control::kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
     control::kiana->g = control::g;
+    control::plt = new paramecium::Fl_Plot(x, y, w, h, g_size * 2);
+    control::plt->p = control::kiana;
+    control::plt->hide();
     control::handler = new control::Fl_Event_Handler(x, y, w, h, g_size);
     control::control = new control::Fl_Control(w, y, 300, h);
+    control::plt->sync();
     control::win->end();
     control::win->show();
     Fl::add_timeout(0.05, timeout_cb);
@@ -61,6 +67,7 @@ int main() {
         control::bar->redraw();
         control::orig->redraw();
         control::kiana->redraw();
+        control::plt->redraw();
         control::control->redraw();
         auto nWin = Fl::wait();
         if (nWin == 0) {

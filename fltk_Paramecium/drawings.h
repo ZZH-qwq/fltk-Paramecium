@@ -44,8 +44,12 @@ namespace draw {
 	}
 
 	Fl_Color rainbow_linear_gradient(double s) {
-		if (s < 0.25) {
+		if (s < 0.125) {
 			return fl_rgb_color(255, 510 * s + 128, 128);
+		} else if (s < 0.25) {
+			return fl_rgb_color(255 - 128 * (s - 0.125), 510 * s + 128 - 128 * (s - 0.125), 128);
+		} else if (s < 0.375) {
+			return fl_rgb_color(510 * (0.5 - s) + 128 - 128 * (0.375 - s), 255 - 128 * (0.375 - s), 128);
 		} else if (s < 0.5) {
 			return fl_rgb_color(510 * (0.5 - s) + 128, 255, 128);
 		} else if (s > 0.75) {

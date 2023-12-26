@@ -163,6 +163,14 @@ namespace paramecium {
             }
             return Fl_Widget::handle(event);
         }
+
+        void update_sliders() {
+            total_energy_ip->value(total_energy);
+            step_len_ip->value(step_length);
+            rotate_rad_ip->value(rotate_radius);
+            deviation_m_ip->value(deviation_mean);
+            deviation_v_ip->value(deviation_variance);
+        }
     };
 
     static void total_energy_cb(Fl_Widget* o, void* v) {
@@ -197,16 +205,12 @@ namespace paramecium {
 
     static void default_val_cb(Fl_Widget* o, void* v) {
         Fl_Paramecium* p = (Fl_Paramecium*)v;
-        p->total_energy_ip->value(500);
         p->total_energy = 500;
-        p->step_len_ip->value(0.5);
         p->step_length = 0.5;
-        p->rotate_rad_ip->value(0.5);
         p->rotate_radius = 0.5;
-        p->deviation_m_ip->value(0);
         p->deviation_mean = 0;
-        p->deviation_v_ip->value(0.01);
         p->deviation_variance = 0.1;
+        p->update_sliders();
         p->dr = std::normal_distribution<double>(p->deviation_mean, p->deviation_variance);
         p->reset_status();
         p->reset_pos();

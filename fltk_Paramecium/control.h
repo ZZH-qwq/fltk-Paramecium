@@ -6,7 +6,7 @@ namespace control {
 
 	class Fl_Control : public Fl_Tabs {
 	public:
-		Fl_Group* environment_control, * paramecium_control;
+		Fl_Group* environment_control, * paramecium_control, * plot_control;
 		int dx = 25, dy = 30;
 
 		Fl_Control(int x_, int y_, int w_, int h_) :Fl_Tabs(x_, y_, w_, h_) {
@@ -79,11 +79,37 @@ namespace control {
 			curr_y += 140;
 			set_group_indicator(curr_y, 120, "Deviation");
 			curr_y += 10;
-			set_paramecium_slider(kiana->deviation_m_ip, curr_y, 0.01, 0, -0.5, 0.5, "Deviation Mean", paramecium::deviation_m_cb);
+			set_paramecium_slider(kiana->deviation_m_ip, curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", paramecium::deviation_m_cb);
 			set_paramecium_slider(kiana->deviation_v_ip, curr_y + 55, 0.01, 0.1, 0.01, 0.5, "Deviation Various", paramecium::deviation_v_cb);
 			curr_y += 140;
 
 			paramecium_control->end();
+
+			plot_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Plotting");
+			plot_control->user_data((void*)fl_intptr_t(3));
+			curr_y = y_ + dy + 35;
+
+			set_plot_slider(plt->samples_ip, curr_y, 50, 500, 50, 2500, "Samples per Unit", 0, true);
+			curr_y += 60;
+			plt->confirm_plot_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Confirm Arguments");
+			plt->confirm_plot_bt->color(FL_LIGHT2);
+			plt->confirm_plot_bt->callback(paramecium::confirm_plot_cb, (void*)plt);
+			plt->confirm_plot_bt->labelsize(18);
+			curr_y += 75;
+			set_group_indicator(curr_y, 165, "Basic");
+			curr_y += 10;
+			set_plot_slider(plt->total_energy_ip, curr_y, 50, 500, 50, 2500, "Total Energy", 0);
+			curr_y += 55;
+			set_plot_slider(plt->step_len_ip, curr_y, 0.01, 0.5, 0.01, 1, "Step Length", 1);
+			set_plot_slider(plt->rotate_rad_ip, curr_y + 50, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", 2);
+			curr_y += 130;
+			set_group_indicator(curr_y, 110, "Deviation");
+			curr_y += 10;
+			set_plot_slider(plt->deviation_m_ip, curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", 3);
+			set_plot_slider(plt->deviation_v_ip, curr_y + 50, 0.01, 0.1, 0.01, 0.5, "Deviation Various", 4);
+			curr_y += 120;
+
+			plot_control->end();
 			end();
 		}
 
@@ -93,7 +119,7 @@ namespace control {
 			b->labelsize(16);
 			b->labelcolor(0x66666600);
 			b->labeltype(FL_ENGRAVED_LABEL);
-			b->box(FL_FLAT_BOX);
+			b->box(FL_PLASTIC_DOWN_BOX);
 			b->color(FL_LIGHT2);
 			return b;
 		}
@@ -110,6 +136,21 @@ namespace control {
 			s->callback(c, (void*)kiana);
 		}
 
+		void set_plot_slider(Fl_Hor_Value_Slider*& s, int y_, double step, double init, double mi, double ma, const char* t, int argc, bool skip = false) {
+			s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 25, t);
+			s->align(FL_ALIGN_BOTTOM);
+			s->color(FL_LIGHT2);
+			s->step(step);
+			s->value(init);
+			s->bounds(mi, ma);
+			s->textsize(14);
+			s->labelsize(16);
+			if (!skip) {
+				s->callback(plot_slider_cb, (void*)(fl_intptr_t)argc);
+			}
+		}
+
+
 		static void tabs_cb(Fl_Widget* w, void*) {
 			Fl_Tabs* tabs = (Fl_Tabs*)w;
 			// When tab changed, make sure it has same color as its group
@@ -121,6 +162,7 @@ namespace control {
 #endif // _DEBUG
 				handler->target = handler->prev_target;
 				kiana->enable_simulate = false;
+				g->show();
 				kiana->has_temp = false;
 				g->stabled = false;
 				if (handler->target == Fl_Event_Handler::Barrier) {
@@ -128,6 +170,7 @@ namespace control {
 				} else {
 					orig->show();
 				}
+				plt->hide();
 				break;
 			case 2:
 #ifdef _DEBUG
@@ -135,10 +178,26 @@ namespace control {
 #endif // _DEBUG
 				handler->target = Fl_Event_Handler::Paramecium;
 				kiana->enable_simulate = true;
+				g->show();
 				g->show_border = false;
 				g->stabled = true;
 				bar->hide();
 				orig->hide();
+				plt->hide();
+				plt->sync_back(true);
+				kiana->update_sliders();
+				break;
+			case 3:
+#ifdef _DEBUG
+				std::cout << "Handleing plot" << std::endl;
+#endif // _DEBUG
+				handler->target = Fl_Event_Handler::Plot;
+				kiana->enable_simulate = false;
+				g->hide();
+				bar->hide();
+				orig->hide();
+				plt->sync();
+				plt->show();
 				break;
 			}
 			handler->send_redraw();

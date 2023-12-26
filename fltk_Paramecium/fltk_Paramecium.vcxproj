@@ -141,6 +141,7 @@
     <ClInclude Include="fl_event_handler.h" />
     <ClInclude Include="fl_grid.h" />
     <ClInclude Include="fl_paramecium.h" />
+    <ClInclude Include="fl_plot.h" />
     <ClInclude Include="grid.h" />
     <ClInclude Include="fl_origin.h" />
     <ClInclude Include="paramecium.h" />

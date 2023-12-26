@@ -10,6 +10,7 @@
 #include "fl_barrier.h"
 #include "fl_origin.h"
 #include "fl_paramecium.h"
+#include "fl_plot.h"
 
 namespace control {
 
@@ -17,6 +18,7 @@ namespace control {
     grid::Fl_Barrier* bar;
     grid::Fl_Origin* orig;
     paramecium::Fl_Paramecium* kiana;
+    paramecium::Fl_Plot* plt;
     grid::Fl_Grid* g;
 
     class Fl_Event_Handler : public Fl_Box {
@@ -24,7 +26,7 @@ namespace control {
         size_t grid_w, grid_h;
         int pixels_per_grid;
 
-        enum Event_Target { None, Barrier, Origin, Paramecium } target, prev_target;
+        enum Event_Target { None, Barrier, Origin, Paramecium, Plot } target, prev_target;
 
         Fl_Box* switch_indicator;
         Fl_Button* switch_bar_orig_bt;
@@ -56,6 +58,8 @@ namespace control {
                     return 1;
                 }
                 break;
+            case Plot:
+                break;
             default:
                 break;
             }
@@ -76,10 +80,14 @@ namespace control {
                 kiana->redraw_flag = true;
                 g->redraw_flag = true;
                 orig->redraw_flag = true;
+                break;
             }
             case Paramecium: {
                 kiana->redraw_flag = true;
                 g->redraw_flag = true;
+                break;
+            }
+            case Plot: {
                 break;
             }
             default: {
@@ -134,5 +142,11 @@ namespace control {
         }
         g->redraw_flag = true;
         g->clear_status();
+    }
+
+    static void plot_slider_cb(Fl_Widget* o, void* v) {
+        Fl_Slider* s = (Fl_Slider*)o;
+        plt->args[fl_intptr_t(v)] = s->value();
+        plt->sync_back_flag = true;
     }
 } // namespace control
