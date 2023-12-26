@@ -57,14 +57,27 @@ namespace grid {
                 return 1;
             }
             case FL_RELEASE: {
-                if (!Fl::event_is_click() || !(Fl::event_button() == FL_LEFT_MOUSE)) {
+                if (!Fl::event_is_click()) {
                     return 0;
                 }
-                g->orig.push_back({ std::floor(grid_x) ,std::floor(grid_y) });
-                g->clear_status();
-                p->reset_status();
-                g->show_border = false;
-                return 1;
+                if (Fl::event_button() == FL_LEFT_MOUSE) {
+                    g->orig.push_back({ std::floor(grid_x) ,std::floor(grid_y) });
+                    g->clear_status();
+                    p->reset_status();
+                    g->show_border = false;
+                    return 1;
+                } else if(Fl::event_button() == FL_RIGHT_MOUSE) {
+                    for (auto it = g->orig.begin(); it != g->orig.end(); ++it) {
+                        if (it->first == std::floor(grid_x) && it->second == std::floor(grid_y)) {
+                            g->orig.erase(it);
+                            break;
+                        }
+                    }
+                    g->clear_status();
+                    p->reset_status();
+                    g->show_border = false;
+                    return 1;
+                }
             }
             }
             return Fl_Widget::handle(event);

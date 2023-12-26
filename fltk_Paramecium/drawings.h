@@ -32,6 +32,13 @@ namespace draw {
 		fl_end_loop();
 	}
 
+	void draw_endpoint_indicator(double x, double y, double size, double lev = 1) {
+		fl_color(fl_rgb_color(0xff, 0x99 + 0x66 * lev, 0x99 + 0x66 * lev));
+		fl_line_style(FL_SOLID, 3);
+		fl_line(x - size, y - size, x + size, y + size);
+		fl_line(x - size, y + size, x + size, y - size);
+	}
+
 	Fl_Color path_linear_gradient(double s) {
 		return fl_rgb_color(255 * s, 255 * s, 255);
 	}

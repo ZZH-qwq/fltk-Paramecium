@@ -10,8 +10,9 @@ namespace paramecium {
         double px, py, rad, temp_x, temp_y, temp_rad;
         int steps_completed = 0, updates = 0;
         int curr_back = 0;
+        std::deque<std::pair<double, double>> endpoints;
 
-        int pixels_per_grid, updates_per_step = 10, back_cd = 6;
+        int pixels_per_grid, updates_per_step = 10, back_cd = 6, endpoint_count = 5;
         double update_factor = 20;
 
         Fl_Box* op_bg;
@@ -86,13 +87,21 @@ namespace paramecium {
             auto sim = simulate_score();
             score_sum += sim.score;
             simulation_count++;
-            if (simulation_count % 25 == 0) {
+            if (simulation_count % 15 == 0) {
                 op_bg->copy_label((std::to_string(simulation_count) + " Samples Simulated").c_str());
                 score_op->value((" " + std::to_string(score_sum / simulation_count)).c_str());
                 rate_op->value((" " + std::to_string(100.0 * success_count / simulation_count) + " %").c_str());
+                endpoints.push_back({ sim.ed_x,sim.ed_y });
+                while (endpoints.size() > endpoint_count) {
+                    endpoints.pop_front();
+                }
             }
             if (sim.result == Found) {
                 ++success_count;
+            }
+            double lev = 1 - simulation_count / 15.0 + std::floor(simulation_count / 15.0);
+            for (int i = 0; i < endpoints.size(); i++) {
+                draw::draw_endpoint_indicator(endpoints[i].first * pixels_per_grid, endpoints[i].second * pixels_per_grid, pixels_per_grid / 2.0, (i + lev) / endpoint_count);
             }
 #ifdef _DEBUG
             //std::cout << (sim.result == Found ? "Found\t" : "Failed\t") << sim.score << "\t" << sim.energy_used << std::endl;

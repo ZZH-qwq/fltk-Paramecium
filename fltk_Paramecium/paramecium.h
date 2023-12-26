@@ -88,7 +88,7 @@ namespace paramecium {
 
 		struct Simulation_Result {
 			Step_type result;
-			double score, energy_used;
+			double score, energy_used, ed_x, ed_y;
 		};
 
 		double total_energy = 500, origin_bonus = 0.5, base_usage = 1;
@@ -122,7 +122,7 @@ namespace paramecium {
 					++c;
 				} while (c < retry_count && g->is_barrier(gx, gy));
 				if (c == retry_count) {
-					return { Failed,score,energy_used };
+					return { Failed,score,energy_used,px,py };
 				}
 				energy_used += (c + 1) / 2.0 * step_length;
 				step_rotate(rad);
@@ -130,9 +130,9 @@ namespace paramecium {
 			}
 			if (g->is_origin(gx, gy)) {
 				score += origin_bonus * (total_energy - energy_used);
-				return { Found,score,energy_used };
+				return { Found,score,energy_used,px,py };
 			}
-			return { Failed,score,energy_used };
+			return { Failed,score,energy_used,px,py };
 		}
 		
 		void reset_status() {
