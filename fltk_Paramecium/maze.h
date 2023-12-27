@@ -11,6 +11,7 @@ namespace grid {
 	class Maze {
     public:
         size_t grid_w, grid_h, maze_w = 0, maze_h = 0, unit_size = 5;
+        std::default_random_engine e;
         std::uniform_int_distribution<int> rand_int;
 
         std::vector<std::vector<int>> walls;
@@ -19,13 +20,15 @@ namespace grid {
 
         Fl_Button* gen_maze_bt = nullptr;
         Fl_Hor_Value_Slider* m_size_ip = nullptr;
+        Fl_Int_Input* seed_ip;
 
         Maze(size_t w_, size_t h_) : grid_w(w_), grid_h(h_) {}
 
-        void generate(int m_size = 0) {
+        void generate(int m_size = 0, int seed = 0) {
             if (m_size) {
                 unit_size = m_size;
             }
+            e = (seed ? std::default_random_engine(seed) : rand_e);
             maze_w = (grid_w - 1) / unit_size + 1, maze_h = (grid_h - 1) / unit_size + 1;
             visited = std::vector<std::vector<int>>(maze_w, std::vector<int>(maze_h));
             walls = std::vector<std::vector<int>>(maze_w * 2, std::vector<int>(maze_h * 2));
@@ -35,10 +38,13 @@ namespace grid {
                     walls[2 * i][2 * j + 1] = walls[2 * i + 1][2 * j] = walls[2 * i + 1][2 * j + 1] = 1;
                 }
             }
-            dfs(rand_int(rand_e) % maze_w, rand_int(rand_e) % maze_h);
+            dfs(rand_int(e) % maze_w, rand_int(e) % maze_h);
 #ifdef _DEBUG
             //print_maze();
 #endif // _DEBUG
+            if (seed == 0) {
+                rand_e = e;
+            }
         }
 
         void dfs(int mx, int my) {
@@ -46,7 +52,7 @@ namespace grid {
             while (!(is_visited(mx - 1, my) && is_visited(mx + 1, my) && is_visited(mx, my - 1) && is_visited(mx, my + 1))) {
                 int dir;
                 do {
-                    dir = rand_int(rand_e) % 4;
+                    dir = rand_int(e) % 4;
                 } while (is_visited(mx + FATHER[dir][0], my + FATHER[dir][1]));
                 if (!out_bound(mx + FATHER[dir][0], my + FATHER[dir][1])) {
                     // Tear down the wall
@@ -84,8 +90,8 @@ namespace grid {
         std::list<std::pair<int, int>> get_orig() {
             int o_x, o_y;
             do {
-                o_x = rand_int(rand_e) % maze_w * unit_size + (unit_size - 1) / 2;
-                o_y = rand_int(rand_e) % maze_h * unit_size + (unit_size - 1) / 2;
+                o_x = rand_int(e) % maze_w * unit_size + (unit_size - 1) / 2;
+                o_y = rand_int(e) % maze_h * unit_size + (unit_size - 1) / 2;
             } while (o_x >= grid_w || o_y >= grid_h);
             return std::list<std::pair<int, int>>(1, { o_x,o_y });
         }

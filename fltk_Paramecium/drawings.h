@@ -52,22 +52,33 @@ namespace draw {
 			return fl_rgb_color(510 * (0.5 - s) + 128 - 128 * (0.375 - s), 255 - 128 * (0.375 - s), 128);
 		} else if (s < 0.5) {
 			return fl_rgb_color(510 * (0.5 - s) + 128, 255, 128);
-		} else if (s > 0.75) {
-			return fl_rgb_color(128, 510 * (1 - s) + 128, 255);
-		} else {
+		} else if (s < 0.75) {
 			return fl_rgb_color(128, 255, 510 * (s - 0.5) + 128);
+		} else {
+			return fl_rgb_color(128, 510 * (1 - s) + 128, 255);
 		}
 	}
 
 	Fl_Color rainbow_linear_gradient_base(double s) {
-		if (s < 0.25) {
+		if (s < 0.2) {
+			s = s / 2;
+		} else if (s < 0.8) {
+			s = s / 6 * 8 - 1.0 / 6;
+		} else {
+			s = s / 2 + 0.5;
+		}
+		if (s < 0.125) {
 			return fl_rgb_color(255, 1020 * s, 0);
+		} else if (s < 0.25) {
+			return fl_rgb_color(255 - 256 * (s - 0.125), 1020 * s - 256 * (s - 0.125), 256 * (s - 0.125));
+		} else if (s < 0.375) {
+			return fl_rgb_color(1020 * (0.5 - s) - 256 * (0.375 - s), 255 - 256 * (0.375 - s), 256 * (s - 0.125));
 		} else if (s < 0.5) {
 			return fl_rgb_color(1020 * (0.5 - s), 255, 0);
-		} else if (s > 0.75) {
-			return fl_rgb_color(0, 1020 * (1 - s), 255);
-		} else {
+		} else if (s < 0.75) {
 			return fl_rgb_color(0, 255, 1020 * (s - 0.5));
+		} else {
+			return fl_rgb_color(0, 1020 * (1 - s), 255);
 		}
 	}
 } // namespace draw

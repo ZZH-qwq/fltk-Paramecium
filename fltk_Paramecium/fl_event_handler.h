@@ -61,6 +61,10 @@ namespace control {
                 }
                 break;
             case Plot:
+                if (plt->handle_show_detail(event, grid_x(), grid_y()) == 1) {
+                    send_redraw();
+                    return 1;
+                }
                 break;
             default:
                 break;
@@ -90,6 +94,7 @@ namespace control {
                 break;
             }
             case Plot: {
+                plt->redraw_flag = true;
                 break;
             }
             default: {
@@ -105,7 +110,7 @@ namespace control {
     }*handler;
 
     static void generate_maze_cb(Fl_Widget* o, void* v) {
-        m->generate(m->m_size_ip->value());
+        m->generate(m->m_size_ip->value(), std::atoi(m->seed_ip->value()));
         g->clear_barrier();
         g->add_barrier(m->get_barriers());
         g->redraw_flag = true;

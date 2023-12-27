@@ -15,14 +15,23 @@ namespace control {
 			int curr_y;
 			environment_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Environment");
 			environment_control->user_data((void*)fl_intptr_t(1));
-			curr_y = y_ + dy + 30;
+			curr_y = y_ + dy + 35;
 
+			set_group_indicator(curr_y, 180, "Maze");
+			curr_y += 10;
+			m->m_size_ip = set_paramecium_slider(curr_y, 1, 5, 2, 16, "Maze Unit Size", nullptr, true);
+			curr_y += 55;
+			m->seed_ip = new Fl_Int_Input(x_ + dx, curr_y, w_ - 2 * dx, 30, "Random Seed (0 for default)");
+			m->seed_ip->align(FL_ALIGN_BOTTOM);
+			m->seed_ip->color(FL_LIGHT2);
+			m->seed_ip->value("0");
+			m->seed_ip->textsize(18);
+			m->seed_ip->labelsize(16);
+			curr_y += 65;
 			m->gen_maze_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Generate Maze");
 			m->gen_maze_bt->color(FL_LIGHT2);
 			m->gen_maze_bt->labelsize(18);
 			m->gen_maze_bt->callback(generate_maze_cb);
-			curr_y += 55;
-			m->m_size_ip = set_paramecium_slider(curr_y, 1, 5, 2, 16, "Maze Unit Size", nullptr, true);
 			curr_y += 90;
 
 			handler->switch_indicator = set_group_indicator(curr_y, 110, "Click on Grid to set Barrier");
@@ -91,7 +100,7 @@ namespace control {
 			plot_control->user_data((void*)fl_intptr_t(3));
 			curr_y = y_ + dy + 35;
 
-			plt->samples_ip = set_plot_slider(curr_y, 50, 500, 50, 2500, "Samples per Unit", 0, true);
+			plt->samples_ip = set_plot_slider(curr_y, 50, 250, 50, 2500, "Samples per Unit", 0, true);
 			curr_y += 60;
 			plt->confirm_plot_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Confirm Arguments");
 			plt->confirm_plot_bt->color(FL_LIGHT2);
@@ -122,6 +131,7 @@ namespace control {
 			orig = new grid::Fl_Origin(x, y, w, h, g_size);
 			kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
 			kiana->g = g;
+			kiana->hide();
 			plt = new paramecium::Fl_Plot(x, y, w, h, g_size * 2);
 			plt->p = kiana;
 			plt->hide();
@@ -184,6 +194,7 @@ namespace control {
 #endif // _DEBUG
 				handler->target = handler->prev_target;
 				kiana->enable_simulate = false;
+				kiana->hide();
 				g->show();
 				kiana->has_temp = false;
 				g->stabled = false;
@@ -200,6 +211,7 @@ namespace control {
 #endif // _DEBUG
 				handler->target = Fl_Event_Handler::Paramecium;
 				kiana->enable_simulate = true;
+				kiana->show();
 				g->show();
 				g->show_border = false;
 				g->stabled = true;
@@ -215,6 +227,7 @@ namespace control {
 #endif // _DEBUG
 				handler->target = Fl_Event_Handler::Plot;
 				kiana->enable_simulate = false;
+				kiana->hide();
 				g->hide();
 				bar->hide();
 				orig->hide();

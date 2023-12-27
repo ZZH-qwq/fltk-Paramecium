@@ -58,7 +58,6 @@ namespace grid {
 				//draw_flow(20, 20);
 				redraw_flag = false;
 			} else if (redraw_flag && stabled && grid_image) {
-				// Not used yet
 				grid_image->draw(x(), y());
 			} else {
 				update_grid();

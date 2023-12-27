@@ -16,9 +16,10 @@ namespace paramecium {
 		int pixels_per_grid;
 		size_t grid_w, grid_h;
 		Fl_Offscreen oscr_plot;
+		Fl_Image* bg_white_transparent, * bg_white_indicator;
 		Fl_RGB_Image* plot_image = nullptr;
 
-		int samples = 500;
+		int samples = 250;
 		double sum_max, sum_min;
 		bool redraw_flag = true, renew_flag = false, finished = false, sync_back_flag = true;
 
@@ -40,6 +41,14 @@ namespace paramecium {
 
 		Fl_Plot(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_),
 			grid_w(w_ / g_size), grid_h(h_ / g_size), pixels_per_grid(g_size) {
+			oscr_plot = fl_create_offscreen(w(), h());
+			uchar data[4]{ 255,255,255,80 };
+			Fl_RGB_Image img(data, 1, 1, 4);
+			bg_white_transparent = img.copy(w_, h_);
+			data[3] = 200;
+			Fl_RGB_Image img2(data, 1, 1, 4);
+			bg_white_indicator = img2.copy(7 * g_size, 6 * g_size);
+
 			clear_status();
 			val1 = Step_len, val2 = Rot_rad;
 			val1_min = 0.1, val1_max = 1, val2_min = -2.5, val2_max = 2.8;
@@ -70,6 +79,8 @@ namespace paramecium {
 				if (curr_x == grid_w - 1) {
 					if (curr_y == grid_h - 1) {
 						finished = true;
+						curr_x = curr_y = -1;
+						gen_image();
 					} else {
 						curr_x = 0, curr_y++;
 					}
@@ -77,10 +88,16 @@ namespace paramecium {
 					curr_x++;
 				}
 			}
-			for (int i = 0; i < grid_w; i++) {
-				for (int j = 0; j < grid_h; j++) {
-					draw_pos(i, j);
-				}
+			if (!finished) {
+				draw_grid();
+			} else if (redraw_flag) {
+				// Drectly use pre-generated image
+				fl_begin_offscreen(oscr_plot);
+				plot_image->draw(0, 0);
+				display_detail();
+				fl_end_offscreen();
+				fl_copy_offscreen(x(), y(), w(), h(), oscr_plot, 0, 0);
+				redraw_flag = false;
 			}
 		}
 
@@ -112,7 +129,64 @@ namespace paramecium {
 			return val;
 		}
 
-		void draw_pos(int cx, int cy, bool in_offscreen = false) {
+		void display_detail() {
+			if (curr_x < 0 || curr_y < 0) {
+				return;
+			}
+			auto& d = data[curr_x][curr_y];
+			double score = d.score_sum / d.total, rate = (double)d.arrived / d.total;
+#ifdef _DEBUG
+			std::cout << "Pointing at (" << curr_x << ", " << curr_y << "), score = " << score << ", rate = " << rate << std::endl;
+#endif // _DEBUG
+			auto grid_color = draw::rainbow_linear_gradient_base((sum_max - d.score_sum) / std::max(sum_max - sum_min, 1.0));
+			fl_rectf(curr_x * pixels_per_grid, curr_y * pixels_per_grid, pixels_per_grid, pixels_per_grid, grid_color);
+			bool align = curr_x <= 6;
+			double gx = (align ? curr_x + 1.6 : curr_x - 6.6), px = (align ? curr_x + 1 : curr_x - 7), gy = (curr_y > grid_h - 6 ? curr_y - 4.5 : curr_y + 0.5);
+			auto tag_color = fl_darker(grid_color);
+			bg_white_transparent->draw(0, 0);
+			bg_white_indicator->draw(px * pixels_per_grid, (gy - 0.5) * pixels_per_grid);
+			display_tag_num(get_val_name(val1), d.val1, gx, gy, 3 * pixels_per_grid, pixels_per_grid, tag_color, align);
+			display_tag_num(get_val_name(val2), d.val2, gx + 3, gy, 3 * pixels_per_grid, pixels_per_grid, tag_color, align);
+			display_tag_num("Adaptation Score", score, gx, gy + 1.2, 6 * pixels_per_grid, 1.8 * pixels_per_grid, grid_color, align);
+			display_tag_num("Arrival Rate", rate, gx, gy + 3.2, 6 * pixels_per_grid, 1.8 * pixels_per_grid, grid_color, align);
+		}
+		void display_tag_num(std::string tag, double num, double gx, double gy, int w, int h, Fl_Color tag_color, bool align) {
+			fl_push_clip(gx * pixels_per_grid, gy * pixels_per_grid, w, h);
+			fl_color(tag_color);
+			fl_font(FL_BOLD, h * 0.4);
+			fl_draw(tag.c_str(), gx * pixels_per_grid, gy * pixels_per_grid, w, h * 0.4, (align ? FL_ALIGN_LEFT : FL_ALIGN_RIGHT));
+			fl_color(FL_BLACK);
+			fl_font(FL_BOLD, h * 0.6);
+			auto n = std::to_string(num);
+			if (n.size() >= 10) {
+				n = n.substr(0, 10);
+			}
+			fl_draw(n.c_str(), gx * pixels_per_grid, gy * pixels_per_grid + h * 0.4, w, h * 0.6, (align ? FL_ALIGN_LEFT : FL_ALIGN_RIGHT));
+			fl_pop_clip();
+		}
+
+		void gen_image() {
+			fl_begin_offscreen(oscr_plot);
+			fl_rectf(0, 0, w(), h(), FL_WHITE);
+			draw_grid(true);
+			auto data = fl_read_image(nullptr, 0, 0, w(), h());
+			if (plot_image) {
+				delete plot_image;
+			}
+			plot_image = new Fl_RGB_Image(data, w(), h());
+			fl_end_offscreen();
+			plot_image->draw(x(), y());
+		}
+
+		void draw_grid(bool in_offscreen = false) {
+			for (int i = 0; i < grid_w; i++) {
+				for (int j = 0; j < grid_h; j++) {
+					draw_pos(i, j, in_offscreen);
+				}
+			}
+		}
+
+		void draw_pos(int cx, int cy, bool in_offscreen = false, bool use_base = false) {
 			if (data[cx][cy].total == 0) {
 				fl_color(FL_WHITE);
 			} else {
@@ -133,7 +207,7 @@ namespace paramecium {
 			sum_min = DBL_MAX, sum_max = 0;
 		}
 
-		std::string get_name(Value_Name v) {
+		static std::string get_val_name(Value_Name v) {
 			switch (v) {
 			case paramecium::Fl_Plot::Step_len:
 				return "Step Length";
@@ -151,6 +225,33 @@ namespace paramecium {
 				return "";
 				break;
 			}
+		}
+
+		int handle_show_detail(int event, double grid_x, double grid_y) {
+			if (!finished) {
+				return Fl_Widget::handle(event);
+			}
+			switch (event) {
+			case FL_ENTER: {
+				return 1;
+			}
+			case FL_MOVE: {
+				if (std::floor(grid_x / 2) == curr_x && std::floor(grid_y / 2) == curr_y) {
+					return 0;
+				}
+				curr_x = std::floor(grid_x / 2);
+				curr_y = std::floor(grid_y / 2);
+				return 1;
+			}
+			case FL_LEAVE: {
+				curr_x = -1;
+				curr_y = -1;
+				return 1;
+			}
+			default:
+				break;
+			}
+			return Fl_Widget::handle(event);
 		}
 
 		void sync() {
