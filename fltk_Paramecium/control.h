@@ -17,13 +17,15 @@ namespace control {
 			environment_control->user_data((void*)fl_intptr_t(1));
 			curr_y = y_ + dy + 30;
 
-			g->clear_barrier_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Generate Maze - TODO");
-			g->clear_barrier_bt->color(FL_LIGHT2);
-			g->clear_barrier_bt->labelsize(18);
-			g->clear_barrier_bt->callback(generate_maze_cb, g);
-			curr_y += 75;
+			m->gen_maze_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Generate Maze");
+			m->gen_maze_bt->color(FL_LIGHT2);
+			m->gen_maze_bt->labelsize(18);
+			m->gen_maze_bt->callback(generate_maze_cb);
+			curr_y += 55;
+			m->m_size_ip = set_paramecium_slider(curr_y, 1, 5, 2, 16, "Maze Unit Size", nullptr, true);
+			curr_y += 90;
 
-			handler->switch_indicator = set_group_indicator(curr_y, 110, "Handling: Barrier");
+			handler->switch_indicator = set_group_indicator(curr_y, 110, "Click on Grid to set Barrier");
 			curr_y += 10;
 
 			g->clear_barrier_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Clear Barriers");
@@ -32,7 +34,7 @@ namespace control {
 			g->clear_barrier_bt->callback(clear_env_cb, g);
 			curr_y += 50;
 
-			handler->switch_bar_orig_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Handle Origin");
+			handler->switch_bar_orig_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Switch to Origin");
 			handler->switch_bar_orig_bt->color(FL_LIGHT2);
 			handler->switch_bar_orig_bt->labelsize(18);
 			handler->switch_bar_orig_bt->callback(switch_bar_orig_cb);
@@ -72,15 +74,15 @@ namespace control {
 
 			set_group_indicator(curr_y, 185, "Basic");
 			curr_y += 10;
-			set_paramecium_slider(kiana->total_energy_ip, curr_y, 50, 500, 50, 2500, "Total Energy", paramecium::total_energy_cb);
+			kiana->total_energy_ip = set_paramecium_slider(curr_y, 50, 500, 50, 2500, "Total Energy", paramecium::total_energy_cb);
 			curr_y += 65;
-			set_paramecium_slider(kiana->step_len_ip, curr_y, 0.01, 0.5, 0.01, 1, "Step Length", paramecium::step_len_cb);
-			set_paramecium_slider(kiana->rotate_rad_ip, curr_y + 55, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", paramecium::rotate_rad_cb);
+			kiana->step_len_ip = set_paramecium_slider(curr_y, 0.01, 0.5, 0.01, 1, "Step Length", paramecium::step_len_cb);
+			kiana->rotate_rad_ip = set_paramecium_slider(curr_y + 55, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", paramecium::rotate_rad_cb);
 			curr_y += 140;
 			set_group_indicator(curr_y, 120, "Deviation");
 			curr_y += 10;
-			set_paramecium_slider(kiana->deviation_m_ip, curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", paramecium::deviation_m_cb);
-			set_paramecium_slider(kiana->deviation_v_ip, curr_y + 55, 0.01, 0.1, 0.01, 0.5, "Deviation Various", paramecium::deviation_v_cb);
+			kiana->deviation_m_ip = set_paramecium_slider(curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", paramecium::deviation_m_cb);
+			kiana->deviation_v_ip = set_paramecium_slider(curr_y + 55, 0.01, 0.1, 0.01, 0.5, "Deviation Various", paramecium::deviation_v_cb);
 			curr_y += 140;
 
 			paramecium_control->end();
@@ -89,7 +91,7 @@ namespace control {
 			plot_control->user_data((void*)fl_intptr_t(3));
 			curr_y = y_ + dy + 35;
 
-			set_plot_slider(plt->samples_ip, curr_y, 50, 500, 50, 2500, "Samples per Unit", 0, true);
+			plt->samples_ip = set_plot_slider(curr_y, 50, 500, 50, 2500, "Samples per Unit", 0, true);
 			curr_y += 60;
 			plt->confirm_plot_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Confirm Arguments");
 			plt->confirm_plot_bt->color(FL_LIGHT2);
@@ -98,19 +100,35 @@ namespace control {
 			curr_y += 75;
 			set_group_indicator(curr_y, 165, "Basic");
 			curr_y += 10;
-			set_plot_slider(plt->total_energy_ip, curr_y, 50, 500, 50, 2500, "Total Energy", 0);
+			plt->total_energy_ip = set_plot_slider(curr_y, 50, 500, 50, 2500, "Total Energy", 0);
 			curr_y += 55;
-			set_plot_slider(plt->step_len_ip, curr_y, 0.01, 0.5, 0.01, 1, "Step Length", 1);
-			set_plot_slider(plt->rotate_rad_ip, curr_y + 50, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", 2);
+			plt->step_len_ip = set_plot_slider(curr_y, 0.01, 0.5, 0.01, 1, "Step Length", 1);
+			plt->rotate_rad_ip = set_plot_slider(curr_y + 50, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", 2);
 			curr_y += 130;
 			set_group_indicator(curr_y, 110, "Deviation");
 			curr_y += 10;
-			set_plot_slider(plt->deviation_m_ip, curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", 3);
-			set_plot_slider(plt->deviation_v_ip, curr_y + 50, 0.01, 0.1, 0.01, 0.5, "Deviation Various", 4);
+			plt->deviation_m_ip = set_plot_slider(curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", 3);
+			plt->deviation_v_ip = set_plot_slider(curr_y + 50, 0.01, 0.1, 0.01, 0.5, "Deviation Various", 4);
 			curr_y += 120;
 
 			plot_control->end();
 			end();
+		}
+
+		static void init(int x, int y, int w, int h, int g_size) {
+			g = new grid::Fl_Grid(x, y, w, h, g_size);
+			m = new grid::Maze(w / g_size, h / g_size);
+			bar = new grid::Fl_Barrier(x, y, w, h, g_size);
+			orig = new grid::Fl_Origin(x, y, w, h, g_size);
+			kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
+			kiana->g = g;
+			plt = new paramecium::Fl_Plot(x, y, w, h, g_size * 2);
+			plt->p = kiana;
+			plt->hide();
+			handler = new Fl_Event_Handler(x, y, w, h, g_size);
+			control = new Fl_Control(w, y, 300, h);
+			plt->sync();
+			generate_maze_cb(nullptr, nullptr);
 		}
 
 		Fl_Box* set_group_indicator(int y_, int h_, const char* t) {
@@ -124,8 +142,8 @@ namespace control {
 			return b;
 		}
 
-		void set_paramecium_slider(Fl_Hor_Value_Slider*& s, int y_, double step, double init, double mi, double ma, const char* t, Fl_Callback* c) {
-			s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 30, t);
+		Fl_Hor_Value_Slider* set_paramecium_slider(int y_, double step, double init, double mi, double ma, const char* t, Fl_Callback* c, bool skip = false) {
+			auto s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 30, t);
 			s->align(FL_ALIGN_BOTTOM);
 			s->color(FL_LIGHT2);
 			s->step(step);
@@ -133,11 +151,14 @@ namespace control {
 			s->bounds(mi, ma);
 			s->textsize(14);
 			s->labelsize(16);
-			s->callback(c, (void*)kiana);
+			if (!skip) {
+				s->callback(c, (void*)kiana);
+			}
+			return s;
 		}
 
-		void set_plot_slider(Fl_Hor_Value_Slider*& s, int y_, double step, double init, double mi, double ma, const char* t, int argc, bool skip = false) {
-			s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 25, t);
+		Fl_Hor_Value_Slider* set_plot_slider(int y_, double step, double init, double mi, double ma, const char* t, int argc, bool skip = false) {
+			auto s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 25, t);
 			s->align(FL_ALIGN_BOTTOM);
 			s->color(FL_LIGHT2);
 			s->step(step);
@@ -148,6 +169,7 @@ namespace control {
 			if (!skip) {
 				s->callback(plot_slider_cb, (void*)(fl_intptr_t)argc);
 			}
+			return s;
 		}
 
 

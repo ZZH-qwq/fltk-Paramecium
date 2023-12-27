@@ -18,6 +18,8 @@ namespace grid {
 		return a.first < b.first || a.first == b.first && a.second < b.second;
 	}
 
+	std::default_random_engine rand_e;
+
 	class Grid {
 	public:
 		struct Intermediate {

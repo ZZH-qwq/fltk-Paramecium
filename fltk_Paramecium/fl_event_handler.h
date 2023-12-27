@@ -11,6 +11,7 @@
 #include "fl_origin.h"
 #include "fl_paramecium.h"
 #include "fl_plot.h"
+#include "maze.h"
 
 namespace control {
 
@@ -20,6 +21,7 @@ namespace control {
     paramecium::Fl_Paramecium* kiana;
     paramecium::Fl_Plot* plt;
     grid::Fl_Grid* g;
+    grid::Maze* m;
 
     class Fl_Event_Handler : public Fl_Box {
     public:
@@ -103,9 +105,12 @@ namespace control {
     }*handler;
 
     static void generate_maze_cb(Fl_Widget* o, void* v) {
-        grid::Fl_Grid* g = (grid::Fl_Grid*)v;
+        m->generate(m->m_size_ip->value());
+        g->clear_barrier();
+        g->add_barrier(m->get_barriers());
         g->redraw_flag = true;
-        g->clear_status();
+        g->set_orig(m->get_orig());
+        kiana->reset_status();
     }
 
 	static void clear_env_cb(Fl_Widget* o, void* v) {
@@ -128,8 +133,8 @@ namespace control {
             orig->enabled = true;
             orig->show();
             bar->hide();
-            handler->switch_indicator->label("Handling: Origin");
-            s->label("Handle Barrier");
+            handler->switch_indicator->label("Click on Grid to set Origin");
+            s->label("Switch to Barrier");
         } else {
             handler->prev_target = handler->target = Fl_Event_Handler::Barrier;
             g->clear_barrier_bt->label("Clear Barriers");
@@ -137,8 +142,8 @@ namespace control {
             orig->enabled = false;
             orig->hide();
             bar->show();
-            handler->switch_indicator->label("Handling: Barrier");
-            s->label("Handle Origin");
+            handler->switch_indicator->label("Click on Grid to set Barrier");
+            s->label("Switch to Origin");
         }
         g->redraw_flag = true;
         g->clear_status();

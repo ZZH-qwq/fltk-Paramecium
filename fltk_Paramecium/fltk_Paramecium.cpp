@@ -45,17 +45,7 @@ int main() {
 
     control::win = new Fl_Double_Window(w + 300, h, "Paramecium");
     control::win->color(FL_LIGHT3);
-    control::g = new grid::Fl_Grid(x, y, w, h, g_size);
-    control::bar = new grid::Fl_Barrier(x, y, w, h, g_size);
-    control::orig = new grid::Fl_Origin(x, y, w, h, g_size);
-    control::kiana = new paramecium::Fl_Paramecium(x, y, w, h, g_size);
-    control::kiana->g = control::g;
-    control::plt = new paramecium::Fl_Plot(x, y, w, h, g_size * 2);
-    control::plt->p = control::kiana;
-    control::plt->hide();
-    control::handler = new control::Fl_Event_Handler(x, y, w, h, g_size);
-    control::control = new control::Fl_Control(w, y, 300, h);
-    control::plt->sync();
+    control::Fl_Control::init(x, y, w, h, g_size);
     control::win->end();
     control::win->show();
     Fl::add_timeout(0.05, timeout_cb);

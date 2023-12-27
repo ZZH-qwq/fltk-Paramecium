@@ -144,6 +144,7 @@
     <ClInclude Include="fl_plot.h" />
     <ClInclude Include="grid.h" />
     <ClInclude Include="fl_origin.h" />
+    <ClInclude Include="maze.h" />
     <ClInclude Include="paramecium.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -21,7 +21,7 @@ namespace paramecium {
         Fl_Hor_Value_Slider* total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip;
 
         Fl_Paramecium(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), pixels_per_grid(g_size) {
-            temp_x = temp_y = px = py = 20;
+            temp_x = temp_y = px = py = 22;
             temp_rad = rad = 0;
             op_bg = nullptr;
             score_op = rate_op = nullptr;
@@ -43,7 +43,7 @@ namespace paramecium {
             }
             if (resimulate_flag) {
                 steps.clear();
-                simulate_steps({ Forward,0,px,py,init_r(e) });
+                simulate_steps({ Forward,0,px,py,init_r(grid::rand_e) });
                 steps_completed = 0;
                 resimulate_flag = false;
             } else if (!steps.empty()) {
@@ -111,7 +111,7 @@ namespace paramecium {
             draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid, curr_back / (double)back_cd);
         }
 
-        void reset_pos() { px = st_x, py = st_y, rad = init_r(e); }
+        void reset_pos() { px = st_x, py = st_y, rad = init_r(grid::rand_e); }
 
         int handle_place_paramecium(int event, grid::Fl_Grid* g, double grid_x, double grid_y) {
             switch (event) {
