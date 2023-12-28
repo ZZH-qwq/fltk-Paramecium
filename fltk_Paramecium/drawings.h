@@ -9,18 +9,41 @@
 
 namespace draw {
 
+	double rads[] = { std::numbers::pi/2,std::numbers::pi,23 * std::numbers::pi / 12,0,std::numbers::pi / 6,std::numbers::pi / 3,3 * std::numbers::pi / 4,5 * std::numbers::pi / 6,std::numbers::pi ,13 * std::numbers::pi / 12,5 * std::numbers::pi / 4,4 * std::numbers::pi / 3,7 * std::numbers::pi / 4,7 * std::numbers::pi / 6,13 * std::numbers::pi / 12 };
+	double lens[] = { 0,0,0.9,1,0.8,0.5,0.5,0.7,1,0.8,0.5,0.3,0.5,0.2,0.3,0.2,0.1,0.4,0.6,0.5 };
+
 	void draw_paramecium_vertex(double x, double y, double r, double size) {
-		double dx1 = cos(r + 0.5) * size, dx2 = cos(r - 0.5) * size, dy1 = sin(r + 0.5) * size, dy2 = sin(r - 0.5) * size;
-		fl_vertex(x + dx1, y + dy1);
-		fl_vertex(x + dx2, y + dy2);
-		fl_vertex(x - dx1, y - dy1);
-		fl_vertex(x - dx2, y - dy2);
+		double dx1 = cos(r) * 0.2, dy1 = sin(r) * 0.2;
+		for (int i = 2; i < 13; i++) {
+			double dx = (cos(r - rads[i]) * lens[i] - dx1) * size, dy = (sin(r - rads[i]) * lens[i] - dy1) * size;
+			fl_vertex(x + dx, y + dy);
+		}
 	}
 
 	void draw_paramecium(double x, double y, double r, double size, double back = 0) {
-		fl_color(fl_rgb_color(0x33 + 0x99 * back, 0xcc - 0x99 * back, 0x66));
+		fl_color(fl_rgb_color(0x99 + 0x33 * back, 0xff - 0x66 * back, 0x99));
 		fl_begin_polygon();
 		draw_paramecium_vertex(x, y, r, size);
+		fl_end_polygon();
+		fl_color(fl_rgb_color(0x33 + 0x99 * back, 0xcc - 0x99 * back, 0x66));
+		fl_line_style(FL_SOLID, 3);
+		fl_begin_loop();
+		draw_paramecium_vertex(x, y, r, size);
+		fl_end_loop();
+		fl_color(fl_rgb_color(0x66 + 0x66 * back, 0xcc - 0x66 * back, 0x66));
+		double dx1 = cos(r) * 0.2, dy1 = sin(r) * 0.2;
+		fl_begin_polygon();
+		for (int i = 11; i < 15; i++) {
+			double dx = (cos(r - rads[i]) * lens[i] - dx1) * size, dy = (sin(r - rads[i]) * lens[i] - dy1) * size;
+			fl_vertex(x + dx, y + dy);
+		}
+		fl_end_polygon();
+		fl_color(fl_rgb_color(0x99 + 0x66 * back, 0xff - 0x99 * back, 0x66));
+		fl_begin_polygon();
+		for (int i = 0; i < 5; i++) {
+			double dx = (cos(r - rads[i]) * lens[i + 15] - dx1) * size, dy = (sin(r - rads[i]) * lens[i + 15] - dy1) * size;
+			fl_vertex(x + dx, y + dy);
+		}
 		fl_end_polygon();
 	}
 
@@ -107,7 +130,7 @@ namespace draw {
 			fl_rectf(x(), y(), w(), h(), FL_BACKGROUND_COLOR);
 			gradient_image->draw(x() + dx, y());
 			fl_font(0, h() - img_h);
-			fl_color(FL_BLACK);
+			fl_color(0x66666600);
 			fl_draw(std::to_string(red).c_str(), x() + dx, y() + img_h, text_w, h() - img_h, FL_ALIGN_LEFT);
 			fl_draw(std::to_string(blue).c_str(), x() + w() - text_w - dx, y() + img_h, text_w, h() - img_h, FL_ALIGN_RIGHT);
 		}

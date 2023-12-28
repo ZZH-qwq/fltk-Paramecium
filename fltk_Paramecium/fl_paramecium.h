@@ -13,7 +13,7 @@ namespace paramecium {
         std::deque<std::pair<double, double>> endpoints;
 
         int pixels_per_grid, updates_per_step = 10, back_cd = 6, endpoint_count = 5;
-        double update_factor = 20;
+        double update_factor = 15;
 
         Fl_Box* op_bg;
         Fl_Output* score_op, * rate_op;
@@ -76,7 +76,7 @@ namespace paramecium {
                     } else if (curr_back > 0) {
                         curr_back--;
                     }
-                    updates_per_step = update_factor * (1.2 - std::min((int)steps.size(), std::min(min_list_len, 2 * steps_completed)) / (double)min_list_len) * step_length + 1;
+                    updates_per_step = update_factor * (1.35 - std::min((int)steps.size(), std::min(min_list_len, 2 * steps_completed)) / (double)min_list_len) * step_length + 1;
                     updates = 0;
                 }
             }
@@ -107,8 +107,8 @@ namespace paramecium {
             //std::cout << (sim.result == Found ? "Found\t" : "Failed\t") << sim.score << "\t" << sim.energy_used << std::endl;
             //std::cout << score_sum / simulation_count << "\t" << (double)success_count / simulation_count << std::endl;
 #endif // _DEBUG
-            draw::draw_paramecium_indicator(st_x * pixels_per_grid, st_y * pixels_per_grid, st_rad, pixels_per_grid);
-            draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid, curr_back / (double)back_cd);
+            draw::draw_paramecium_indicator(st_x * pixels_per_grid, st_y * pixels_per_grid, st_rad, pixels_per_grid * 1.2);
+            draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid * 1.2, curr_back / (double)back_cd);
         }
 
         void reset_pos() { px = st_x, py = st_y, rad = init_r(grid::rand_e); }
