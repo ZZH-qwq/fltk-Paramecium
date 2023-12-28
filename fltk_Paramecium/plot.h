@@ -41,7 +41,7 @@ namespace paramecium {
 		Plot(int w_, int h_, int g_size) : grid_w(w_ / g_size), grid_h(h_ / g_size), pixels_per_grid(g_size) {
 			clear_status();
 			val1 = Step_len, val2 = Rot_rad;
-			val1_min = 0.1, val1_max = 1, val2_min = -2.5, val2_max = 2.8;
+			val1_min = 0.05, val1_max = 0.95, val2_min = -2, val2_max = 3;
 		}
 
 		bool simulate_grid() {

@@ -15,7 +15,8 @@ namespace control {
 			int curr_y;
 			environment_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Environment");
 			environment_control->user_data((void*)fl_intptr_t(1));
-			curr_y = y_ + dy + 35;
+			curr_y = y_ + dy + 85;
+			g->gradient_ind = new draw::Fl_Gradient(x_ + 15, y_ + dy + 15, w_ - 30, 45, 30);
 
 			set_group_indicator(curr_y, 180, "Maze");
 			curr_y += 10;
@@ -98,9 +99,11 @@ namespace control {
 
 			plot_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Plotting");
 			plot_control->user_data((void*)fl_intptr_t(3));
-			curr_y = y_ + dy + 35;
+			curr_y = y_ + dy + 85;
+			plt->gradient_ind = new draw::Fl_Gradient(x_ + 15, y_ + dy + 15, w_ - 30, 45, 30);
 
-			set_group_indicator(curr_y, 280, "");
+			set_group_indicator(curr_y, 280, "Plot");
+			plt->axis_ind = new draw::Fl_Axis(x_ + 20, curr_y + 5, w_ - 40, 220, 15);
 			curr_y += 10;
 			plt->val1_ip = set_val_choice(curr_y + 60, 0, "X Axis");
 			plt->val1_d_ip = set_val_delta_ip(curr_y + 60, 0);
@@ -189,7 +192,7 @@ namespace control {
 		}
 
 		Fl_Choice* set_val_choice(int y, int i, const char* t) {
-			auto c = new Fl_Choice(x() + dx + 50, y, 115, 40, t);
+			auto c = new Fl_Choice(x() + dx + 40, y, 125, 40, t);
 			c->menu(paramecium::gen_items(plt, i));
 			c->value(i);
 			c->color(FL_LIGHT2);
@@ -204,6 +207,8 @@ namespace control {
 			c->color(FL_LIGHT2);
 			c->textsize(18);
 			c->labelsize(16);
+			c->when(FL_WHEN_CHANGED);
+			c->callback(paramecium::plot_val_cb, (void*)plt);
 			return c;
 		}
 

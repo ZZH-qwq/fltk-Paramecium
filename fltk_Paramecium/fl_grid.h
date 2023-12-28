@@ -19,7 +19,8 @@ namespace grid {
 		Fl_Image* bg_white_transparent;
 		Fl_RGB_Image* grid_image = nullptr;
 
-		Fl_Button* clear_barrier_bt;
+		Fl_Button* clear_barrier_bt = nullptr;
+		draw::Fl_Gradient* gradient_ind = nullptr;
 
 		Fl_Grid(int x_, int y_, int w_, int h_, int g_size) : Fl_Box(x_, y_, w_, h_), Grid(w_ / g_size, h_ / g_size),
 			pixels_per_grid(g_size), step_count(std::max(static_cast<int>(grid_w * grid_h / 20), 1)) {
@@ -27,7 +28,6 @@ namespace grid {
 			uchar data[4]{ 255,255,255,40 };
 			Fl_RGB_Image img(data, 1, 1, 4);
 			bg_white_transparent = img.copy(w_, h_);
-			clear_barrier_bt = nullptr;
 		}
 
 		void draw_border() {
@@ -51,6 +51,8 @@ namespace grid {
 					flush_flag = true;
 				}
 				step_flag = false;
+				gradient_ind->red = (double)d_min / 2;
+				gradient_ind->blue = (double)d_max / 2;
 			}
 			if ((redraw_flag || flush_flag) && !stabled) {
 				draw_grid();

@@ -15,6 +15,8 @@ namespace paramecium {
 		Fl_Offscreen oscr_plot;
 		Fl_Image* bg_white_transparent, * bg_white_indicator;
 		Fl_RGB_Image* plot_image = nullptr;
+		draw::Fl_Gradient* gradient_ind = nullptr;
+		draw::Fl_Axis* axis_ind = nullptr;
 
 		Fl_Button* confirm_plot_bt;
 		Fl_Hor_Value_Slider* samples_ip, * total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip;
@@ -23,7 +25,7 @@ namespace paramecium {
 
 		Fl_Plot(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), Plot(w_, h_, g_size) {
 			oscr_plot = fl_create_offscreen(w(), h());
-			uchar data[4]{ 255,255,255,80 };
+			uchar data[4]{ 255,255,255,50 };
 			Fl_RGB_Image img(data, 1, 1, 4);
 			bg_white_transparent = img.copy(w_, h_);
 			data[3] = 200;
@@ -34,6 +36,7 @@ namespace paramecium {
 		void draw() {
 			if (!finished) {
 				bool g_fin = simulate_grid();
+				gradient_ind->red = sum_max / samples, gradient_ind->blue = sum_min / samples;
 				if (g_fin && curr_x == grid_w - 1) {
 					if (curr_y == grid_h - 1) {
 						finished = true;
@@ -171,12 +174,22 @@ namespace paramecium {
 			deviation_v_ip->value(o_devv);
 		}
 		void update_args() {
-			samples = samples_ip->value();
 			args[0] = o_erg = total_energy_ip->value();
 			args[1] = o_slen = step_len_ip->value();
 			args[2] = o_rotr = rotate_rad_ip->value();
 			args[3] = o_devm = deviation_m_ip->value();
 			args[4] = o_devv = deviation_v_ip->value();
+		}
+		void update_axis() {
+			int v[2] = { val1_ip->value(),val2_ip->value() };
+			double deltas[2] = { std::atof(val1_d_ip->value()),std::atof(val2_d_ip->value()) };
+			vals[0] = (Fl_Plot::Value_Name)v[0], vals[1] = (Fl_Plot::Value_Name)v[1];
+			update_args();
+			for (int i = 0; i < 2; i++) {
+				axis_ind->tags[i] = get_val_name(vals[i]);
+				axis_ind->mins[i] = std::max(val_min[v[i]], args[v[i] + 1] - abs(deltas[i]));
+				axis_ind->maxs[i] = std::min(val_max[v[i]], args[v[i] + 1] + abs(deltas[i]));
+			}
 		}
 	};
 
@@ -190,6 +203,7 @@ namespace paramecium {
 		double delta1 = std::atof(p->val1_d_ip->value()), delta2 = std::atof(p->val2_d_ip->value());
 
 		p->update_args();
+		p->samples = p->samples_ip->value();
 		p->val1_min = std::max(p->val_min[val1], p->args[val1 + 1] - abs(delta1));
 		p->val2_min = std::max(p->val_min[val2], p->args[val2 + 1] - abs(delta2));
 		p->val1_max = std::min(p->val_max[val1], p->args[val1 + 1] + abs(delta1));
@@ -198,28 +212,20 @@ namespace paramecium {
 		p->sync_back();
 	}
 
-	struct Plot_Val {
-		Fl_Plot* p;
-		Fl_Plot::Value_Name v;
-		int i;
-	};
-
 	static void plot_val_cb(Fl_Widget* o, void* v) {
-		Plot_Val* plt = (Plot_Val*)v;
-		plt->p->vals[plt->i] = plt->v;
+		Fl_Plot* p = (Fl_Plot*)v;
+		p->update_axis();
 	}
 
 	Fl_Menu_Item* gen_items(Fl_Plot* p, int i) {
 		Fl_Menu_Item* items = new Fl_Menu_Item[5]{ 0 };
 		for (int v = 0; v < 4; v++) {
 			Fl_Plot::Value_Name n = (Fl_Plot::Value_Name)v;
-			Plot_Val* plt = new Plot_Val{ p,n,i };
 			items[v].text = Fl_Plot::get_val_name(n);
 			items[v].shortcut_ = 0;
 			items[v].callback_ = plot_val_cb;
-			items[v].user_data_ = (void*)plt;
+			items[v].user_data_ = (void*)p;
 		}
-
 		return items;
 	}
 } // namespace paramecium

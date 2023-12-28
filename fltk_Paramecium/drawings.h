@@ -81,4 +81,62 @@ namespace draw {
 			return fl_rgb_color(0, 1020 * (1 - s), 255);
 		}
 	}
+
+	class Fl_Gradient : public Fl_Widget {
+	public:
+		Fl_Image* gradient_image = nullptr;
+
+		int dx = 0, text_w = 30, img_w, img_h;
+		double red = 0, blue = 0;
+
+		Fl_Gradient(int x_, int y_, int w_, int h_, int g_h) :Fl_Widget(x_, y_, w_, h_) {
+			img_w = w_ - 2 * dx, img_h = g_h;
+			uchar* data = new uchar[img_w * 3];
+			for (int i = 0; i < img_w; i++) {
+				Fl_Color c = rainbow_linear_gradient((double)i / img_w);
+				data[3 * i] = c >> 24;
+				data[3 * i + 1] = c >> 16;
+				data[3 * i + 2] = c >> 8;
+			}
+			Fl_RGB_Image img(data, img_w, 1, 3);
+			gradient_image = img.copy(img_w, img_h);
+			delete[] data;
+		}
+
+		void draw() override {
+			fl_rectf(x(), y(), w(), h(), FL_BACKGROUND_COLOR);
+			gradient_image->draw(x() + dx, y());
+			fl_font(0, h() - img_h);
+			fl_color(FL_BLACK);
+			fl_draw(std::to_string(red).c_str(), x() + dx, y() + img_h, text_w, h() - img_h, FL_ALIGN_LEFT);
+			fl_draw(std::to_string(blue).c_str(), x() + w() - text_w - dx, y() + img_h, text_w, h() - img_h, FL_ALIGN_RIGHT);
+		}
+	};
+
+	class Fl_Axis : public Fl_Widget {
+	public:
+		double mins[2] = { 0.05, -2 }, maxs[2] = { 0.95,3 };
+		int text_h, text_w = 30;
+		const char* tags[2] = { "Step Length","Rotate Radius" };
+
+		Fl_Axis(int x_, int y_, int w_, int h_, int t_h) :Fl_Widget(x_, y_, w_, h_), text_h(t_h) {}
+
+		void draw() {
+			fl_rectf(x(), y(), w(), h(), FL_LIGHT3);
+			fl_color(0x66666600);
+			fl_line_style(FL_SOLID, 3);
+			fl_line(x() + 10, y() + 30, x() + 10, y() + h() - 10);
+			fl_line(x() + 30, y() + 10, x() + w() - 10, y() + 10);
+			fl_line_style(FL_SOLID, 2);
+			fl_line(x() + 5, y() + h() - 15, x() + 10, y() + h() - 10, x() + 15, y() + h() - 15);
+			fl_line(x() + w() - 15, y() + 5, x() + w() - 10, y() + 10, x() + w() - 15, y() + 15);
+			fl_font(0, text_h);
+			fl_draw(std::to_string(mins[0]).substr(0, 7).c_str(), x() + 30, y() + 15, text_w, text_h, FL_ALIGN_LEFT);
+			fl_draw(std::to_string(maxs[0]).substr(0, 7).c_str(), x() + w() - text_w - 10, y() + 15, text_w, text_h, FL_ALIGN_RIGHT);
+			fl_draw(std::to_string(mins[1]).substr(0, 7).c_str(), x() + 15, y() + 38, text_w, text_h, FL_ALIGN_LEFT);
+			fl_draw(std::to_string(maxs[1]).substr(0, 7).c_str(), x() + 15, y() + h() - text_h - 18, text_w, text_h, FL_ALIGN_LEFT);
+			fl_draw(90, tags[1], x() + 30, y() + (h() + fl_width(tags[1])) / 2 + 10);
+			fl_draw(tags[0], x() + (w() - fl_width(tags[0])) / 2 + 10, y() + 30);
+		}
+	};
 } // namespace draw
