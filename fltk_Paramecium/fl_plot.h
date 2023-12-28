@@ -18,6 +18,8 @@ namespace paramecium {
 
 		Fl_Button* confirm_plot_bt;
 		Fl_Hor_Value_Slider* samples_ip, * total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip;
+		Fl_Choice* val1_ip, * val2_ip;
+		Fl_Float_Input* val1_d_ip, * val2_d_ip;
 
 		Fl_Plot(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), Plot(w_, h_, g_size) {
 			oscr_plot = fl_create_offscreen(w(), h());
@@ -145,6 +147,16 @@ namespace paramecium {
 				curr_y = -1;
 				return 1;
 			}
+			case FL_RELEASE: {
+				if (!(Fl::event_button() == FL_LEFT_MOUSE)) {
+					return 0;
+				}
+				curr_x = std::floor(grid_x / 2);
+				curr_y = std::floor(grid_y / 2);
+				auto [v1,v2] = set_values();
+				sync(false);
+				return 1;
+			}
 			default:
 				break;
 			}
@@ -170,8 +182,44 @@ namespace paramecium {
 
 	static void confirm_plot_cb(Fl_Widget* o, void* v) {
 		Fl_Plot* p = (Fl_Plot*)v;
+		int val1 = p->val1_ip->value(), val2 = p->val2_ip->value();
+		if (val1 == val2) {
+			return;
+		}
+		p->val1 = (Fl_Plot::Value_Name)val1, p->val2 = (Fl_Plot::Value_Name)val2;
+		double delta1 = std::atof(p->val1_d_ip->value()), delta2 = std::atof(p->val2_d_ip->value());
+
 		p->update_args();
+		p->val1_min = std::max(p->val_min[val1], p->args[val1 + 1] - abs(delta1));
+		p->val2_min = std::max(p->val_min[val2], p->args[val2 + 1] - abs(delta2));
+		p->val1_max = std::min(p->val_max[val1], p->args[val1 + 1] + abs(delta1));
+		p->val2_max = std::min(p->val_max[val2], p->args[val2 + 1] + abs(delta2));
 		p->clear_status();
 		p->sync_back();
+	}
+
+	struct Plot_Val {
+		Fl_Plot* p;
+		Fl_Plot::Value_Name v;
+		int i;
+	};
+
+	static void plot_val_cb(Fl_Widget* o, void* v) {
+		Plot_Val* plt = (Plot_Val*)v;
+		plt->p->vals[plt->i] = plt->v;
+	}
+
+	Fl_Menu_Item* gen_items(Fl_Plot* p, int i) {
+		Fl_Menu_Item* items = new Fl_Menu_Item[5]{ 0 };
+		for (int v = 0; v < 4; v++) {
+			Fl_Plot::Value_Name n = (Fl_Plot::Value_Name)v;
+			Plot_Val* plt = new Plot_Val{ p,n,i };
+			items[v].text = Fl_Plot::get_val_name(n);
+			items[v].shortcut_ = 0;
+			items[v].callback_ = plot_val_cb;
+			items[v].user_data_ = (void*)plt;
+		}
+
+		return items;
 	}
 } // namespace paramecium

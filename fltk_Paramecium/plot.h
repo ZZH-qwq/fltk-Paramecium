@@ -32,8 +32,11 @@ namespace paramecium {
 		double args[5] = { 500,0.5,0.5,0,0.1 };
 		double o_erg = 500, o_slen = 0.5, o_rotr = 0.5, o_devm = 0, o_devv = 0.1;
 
-		enum Value_Name { Step_len, Rot_rad, Dev_m, Dev_v } val1, val2;
+		enum Value_Name { Step_len, Rot_rad, Dev_m, Dev_v } val1, val2, vals[2] = { Step_len,Rot_rad };
 		double val1_min, val1_max, val2_min, val2_max;
+
+		double val_min[4] = { 0,(-M_PI),-0.25,0.01 };
+		double val_max[4] = { 1,M_PI,0.25,0.5 };
 
 		Plot(int w_, int h_, int g_size) : grid_w(w_ / g_size), grid_h(h_ / g_size), pixels_per_grid(g_size) {
 			clear_status();
@@ -88,6 +91,7 @@ namespace paramecium {
 			default:
 				break;
 			}
+			p->dr = std::normal_distribution<double>(p->deviation_mean, p->deviation_variance);
 			return val;
 		}
 
@@ -95,10 +99,11 @@ namespace paramecium {
 			data = std::vector<std::vector<Plot_Unit>>(grid_w, std::vector<Plot_Unit>(grid_h));
 			finished = false, renew_flag = false, sync_back_flag = true;
 			curr_x = curr_y = 0;
+			grid_simulated = 0;
 			sum_min = DBL_MAX, sum_max = 0;
 		}
 
-		static std::string get_val_name(Value_Name v) {
+		static const char* get_val_name(Value_Name v) {
 			switch (v) {
 			case paramecium::Plot::Step_len:
 				return "Step Length";
@@ -110,7 +115,7 @@ namespace paramecium {
 				return "Deviation Mean";
 				break;
 			case paramecium::Plot::Dev_v:
-				return "Deviation Various";
+				return "Deviation Var.";
 				break;
 			default:
 				return "";
@@ -118,14 +123,16 @@ namespace paramecium {
 			}
 		}
 		
-		void sync() {
+		void sync(bool clear = true) {
 			args[0] = o_erg = p->total_energy;
 			args[1] = o_slen = p->step_length;
 			args[2] = o_rotr = p->rotate_radius;
 			args[3] = o_devm = p->deviation_mean;
 			args[4] = o_devv = p->deviation_variance;
 			update_sliders();
-			clear_status();
+			if (clear) {
+				clear_status();
+			}
 		}
 		void sync_back(bool force = false) {
 			if (!sync_back_flag && !force) {

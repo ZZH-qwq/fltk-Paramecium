@@ -100,8 +100,14 @@ namespace control {
 			plot_control->user_data((void*)fl_intptr_t(3));
 			curr_y = y_ + dy + 35;
 
-			plt->samples_ip = set_plot_slider(curr_y, 50, 250, 50, 2500, "Samples per Unit", 0, true);
-			curr_y += 60;
+			set_group_indicator(curr_y, 280, "");
+			curr_y += 10;
+			plt->val1_ip = set_val_choice(curr_y + 60, 0, "X Axis");
+			plt->val1_d_ip = set_val_delta_ip(curr_y + 60, 0);
+			plt->val2_ip = set_val_choice(curr_y + 130, 1, "Y Axis");
+			plt->val2_d_ip = set_val_delta_ip(curr_y + 130, 1);
+			plt->samples_ip = set_plot_slider(curr_y + 220, 50, 250, 50, 2500, "Samples per Unit", 0, true);
+			curr_y += 280;
 			plt->confirm_plot_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Confirm Arguments");
 			plt->confirm_plot_bt->color(FL_LIGHT2);
 			plt->confirm_plot_bt->callback(paramecium::confirm_plot_cb, (void*)plt);
@@ -182,6 +188,24 @@ namespace control {
 			return s;
 		}
 
+		Fl_Choice* set_val_choice(int y, int i, const char* t) {
+			auto c = new Fl_Choice(x() + dx + 50, y, 115, 40, t);
+			c->menu(paramecium::gen_items(plt, i));
+			c->value(i);
+			c->color(FL_LIGHT2);
+			c->align(FL_ALIGN_BOTTOM_RIGHT);
+			c->textsize(18);
+			c->labelsize(16);
+			return c;
+		}
+		Fl_Float_Input* set_val_delta_ip(int y, int i) {
+			auto c = new Fl_Float_Input(x() + dx + 190, y, 60, 40, "+/-");
+			c->value(i ? "2.5" : "0.45");
+			c->color(FL_LIGHT2);
+			c->textsize(18);
+			c->labelsize(16);
+			return c;
+		}
 
 		static void tabs_cb(Fl_Widget* w, void*) {
 			Fl_Tabs* tabs = (Fl_Tabs*)w;
