@@ -24,7 +24,7 @@ namespace paramecium {
 		std::uniform_real_distribution<double> init_r;
 		std::normal_distribution<double> dr;
 
-		Paramecium() : init_r(0, 2 * M_PI), dr(deviation_mean, deviation_variance) {
+		Paramecium() : init_r(0, 2 * std::numbers::pi), dr(deviation_mean, deviation_variance) {
 			st_x = st_y = 22, st_rad = 0;
 		}
 
@@ -125,7 +125,7 @@ namespace paramecium {
 				}
 				energy_used += (c + 1) / 2.0 * step_length;
 				step_rotate(rad);
-				energy_used += abs(rotate_radius) / M_PI;
+				energy_used += abs(rotate_radius) / std::numbers::pi;
 			}
 			if (g->is_origin(gx, gy)) {
 				score += origin_bonus * (total_energy - energy_used);

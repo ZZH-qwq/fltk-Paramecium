@@ -35,8 +35,8 @@ namespace paramecium {
 		enum Value_Name { Step_len, Rot_rad, Dev_m, Dev_v } val1, val2, vals[2] = { Step_len,Rot_rad };
 		double val1_min, val1_max, val2_min, val2_max;
 
-		double val_min[4] = { 0,(-M_PI),-0.25,0.01 };
-		double val_max[4] = { 1,M_PI,0.25,0.5 };
+		double val_min[4] = { 0,-std::numbers::pi,-0.25,0.01 };
+		double val_max[4] = { 1,std::numbers::pi,0.25,0.5 };
 
 		Plot(int w_, int h_, int g_size) : grid_w(w_ / g_size), grid_h(h_ / g_size), pixels_per_grid(g_size) {
 			clear_status();

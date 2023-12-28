@@ -86,7 +86,7 @@ namespace control {
 			kiana->total_energy_ip = set_paramecium_slider(curr_y, 50, 500, 50, 2500, "Total Energy", paramecium::total_energy_cb);
 			curr_y += 65;
 			kiana->step_len_ip = set_paramecium_slider(curr_y, 0.01, 0.5, 0.01, 1, "Step Length", paramecium::step_len_cb);
-			kiana->rotate_rad_ip = set_paramecium_slider(curr_y + 55, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", paramecium::rotate_rad_cb);
+			kiana->rotate_rad_ip = set_paramecium_slider(curr_y + 55, 0.01, 0.5, -std::numbers::pi, std::numbers::pi, "Rotate Radius", paramecium::rotate_rad_cb);
 			curr_y += 140;
 			set_group_indicator(curr_y, 120, "Deviation");
 			curr_y += 10;
@@ -118,7 +118,7 @@ namespace control {
 			plt->total_energy_ip = set_plot_slider(curr_y, 50, 500, 50, 2500, "Total Energy", 0);
 			curr_y += 55;
 			plt->step_len_ip = set_plot_slider(curr_y, 0.01, 0.5, 0.01, 1, "Step Length", 1);
-			plt->rotate_rad_ip = set_plot_slider(curr_y + 50, 0.01, 0.5, -M_PI, M_PI, "Rotate Radius", 2);
+			plt->rotate_rad_ip = set_plot_slider(curr_y + 50, 0.01, 0.5, -std::numbers::pi, std::numbers::pi, "Rotate Radius", 2);
 			curr_y += 130;
 			set_group_indicator(curr_y, 110, "Deviation");
 			curr_y += 10;
