@@ -158,6 +158,7 @@ namespace paramecium {
 				curr_y = std::floor(grid_y / 2);
 				auto [v1,v2] = set_values();
 				sync(false);
+				update_axis();
 				return 1;
 			}
 			default:

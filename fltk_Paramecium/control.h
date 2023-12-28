@@ -260,7 +260,7 @@ namespace control {
 				g->hide();
 				bar->hide();
 				orig->hide();
-				plt->sync();
+				plt->sync(false);
 				plt->show();
 				break;
 			}

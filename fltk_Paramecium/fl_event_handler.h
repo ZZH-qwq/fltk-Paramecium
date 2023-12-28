@@ -158,5 +158,6 @@ namespace control {
         Fl_Slider* s = (Fl_Slider*)o;
         plt->args[fl_intptr_t(v)] = s->value();
         plt->sync_back_flag = true;
+        plt->update_axis();
     }
 } // namespace control
