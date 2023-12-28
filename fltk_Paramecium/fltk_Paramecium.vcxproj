@@ -146,6 +146,7 @@
     <ClInclude Include="fl_origin.h" />
     <ClInclude Include="maze.h" />
     <ClInclude Include="paramecium.h" />
+    <ClInclude Include="plot.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

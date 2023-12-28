@@ -56,5 +56,8 @@
     <ClInclude Include="maze.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="plot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
