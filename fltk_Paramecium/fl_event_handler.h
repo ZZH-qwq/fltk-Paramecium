@@ -159,5 +159,6 @@ namespace control {
         plt->args[fl_intptr_t(v)] = s->value();
         plt->sync_back_flag = true;
         plt->update_axis();
+        kiana->reset_status();
     }
 } // namespace control

@@ -151,7 +151,7 @@ namespace paramecium {
 				return 1;
 			}
 			case FL_RELEASE: {
-				if (!(Fl::event_button() == FL_LEFT_MOUSE)) {
+				if (!(Fl::event_button() == FL_LEFT_MOUSE) || !Fl::event_is_click()) {
 					return 0;
 				}
 				curr_x = std::floor(grid_x / 2);
@@ -159,6 +159,7 @@ namespace paramecium {
 				auto [v1,v2] = set_values();
 				sync(false);
 				update_axis();
+				p->reset_status();
 				return 1;
 			}
 			default:
