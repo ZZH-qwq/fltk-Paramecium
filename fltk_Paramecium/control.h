@@ -18,10 +18,10 @@ namespace control {
 			curr_y = y_ + dy + 85;
 			g->gradient_ind = new draw::Fl_Gradient(x_ + 15, y_ + dy + 15, w_ - 30, 45, 30);
 
-			set_group_indicator(curr_y, 180, "Maze");
+			set_group_indicator(curr_y, 175, "Maze");
 			curr_y += 10;
 			m->m_size_ip = set_paramecium_slider(curr_y, 1, 5, 2, 16, "Maze Unit Size", nullptr, true);
-			curr_y += 55;
+			curr_y += 50;
 			m->seed_ip = new Fl_Int_Input(x_ + dx, curr_y, w_ - 2 * dx, 30, "Random Seed (0 for default)");
 			m->seed_ip->align(FL_ALIGN_BOTTOM);
 			m->seed_ip->color(FL_LIGHT2);
@@ -53,7 +53,7 @@ namespace control {
 
 			paramecium_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Paramecium");
 			paramecium_control->user_data((void*)fl_intptr_t(2));
-			curr_y = y_ + dy + 35;
+			curr_y = y_ + dy + 30;
 
 			kiana->op_bg = set_group_indicator(curr_y, 145, "0 Samples Simulated");
 			curr_y += 10;
@@ -68,7 +68,7 @@ namespace control {
 			kiana->rate_op->value(" 0.000%");
 			kiana->rate_op->textsize(20);
 			kiana->rate_op->labelsize(16);
-			curr_y += 90;
+			curr_y += 80;
 
 			kiana->reset_pos_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Reset Position");
 			kiana->reset_pos_bt->color(FL_LIGHT2);
@@ -80,27 +80,52 @@ namespace control {
 			kiana->default_val_bt->color(FL_LIGHT2);
 			kiana->default_val_bt->callback(paramecium::default_val_cb, (void*)kiana);
 			kiana->default_val_bt->labelsize(18);
-			curr_y += 80;
+			curr_y += 70;
 
-			set_group_indicator(curr_y, 185, "Basic");
+			set_group_indicator(curr_y, 160, "Basic");
 			curr_y += 10;
 			kiana->total_energy_ip = set_paramecium_slider(curr_y, 50, 500, 50, 2500, "Total Energy", paramecium::total_energy_cb);
-			curr_y += 65;
+			curr_y += 50;
 			kiana->step_len_ip = set_paramecium_slider(curr_y, 0.01, 0.5, 0.01, 1, "Step Length", paramecium::step_len_cb);
-			kiana->rotate_rad_ip = set_paramecium_slider(curr_y + 55, 0.01, 0.5, -std::numbers::pi, std::numbers::pi, "Rotate Radius", paramecium::rotate_rad_cb);
-			curr_y += 140;
-			set_group_indicator(curr_y, 120, "Deviation");
+			kiana->rotate_rad_ip = set_paramecium_slider(curr_y + 50, 0.01, 0.5, -std::numbers::pi, std::numbers::pi, "Rotate Radius", paramecium::rotate_rad_cb);
+			curr_y += 130;
+			set_group_indicator(curr_y, 110, "Deviation");
 			curr_y += 10;
 			kiana->deviation_m_ip = set_paramecium_slider(curr_y, 0.01, 0, -0.25, 0.25, "Deviation Mean", paramecium::deviation_m_cb);
-			kiana->deviation_v_ip = set_paramecium_slider(curr_y + 55, 0.01, 0.1, 0.01, 0.5, "Deviation Various", paramecium::deviation_v_cb);
-			curr_y += 140;
+			kiana->deviation_v_ip = set_paramecium_slider(curr_y + 50, 0.01, 0.1, 0.01, 0.5, "Deviation Various", paramecium::deviation_v_cb);
+			curr_y += 130;
+
+			set_group_indicator(curr_y, 115, "Simulate Annealing");
+			curr_y += 10;
+			kiana->anneal_prog = new Fl_Progress(x_ + dx, curr_y, w_ - 2 * dx, 30, "Annealing Progrss");
+			kiana->anneal_prog->align(FL_ALIGN_BOTTOM);
+			kiana->anneal_prog->color2(0x33ff6600);
+			kiana->anneal_prog->hide();
+			kiana->anneal_prog->labelsize(16);
+			kiana->t_st_ip = new Fl_Int_Input(x_ + dx, curr_y, w_ / 2 - dx - 5, 30, "Max T");
+			kiana->t_st_ip->align(FL_ALIGN_BOTTOM);
+			kiana->t_st_ip->value("1000");
+			kiana->t_st_ip->color(FL_LIGHT2);
+			kiana->t_st_ip->textsize(18);
+			kiana->t_st_ip->labelsize(16);
+			kiana->t_min_ip = new Fl_Int_Input(x_ + w_ / 2 + 5, curr_y, w_ / 2 - dx - 5, 30, "Min T");
+			kiana->t_min_ip->align(FL_ALIGN_BOTTOM);
+			kiana->t_min_ip->value("10");
+			kiana->t_min_ip->color(FL_LIGHT2);
+			kiana->t_min_ip->textsize(18);
+			kiana->t_min_ip->labelsize(16);
+			curr_y += 55;
+			kiana->anneal_bt= new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Start Annealing");
+			kiana->anneal_bt->color(FL_LIGHT2);
+			kiana->anneal_bt->callback(paramecium::anneal_cb, (void*)kiana);
+			kiana->anneal_bt->labelsize(18);
 
 			paramecium_control->end();
 
 			plot_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Plotting");
 			plot_control->user_data((void*)fl_intptr_t(3));
 			curr_y = y_ + dy + 85;
-			plt->gradient_ind = new draw::Fl_Gradient(x_ + 15, y_ + dy + 15, w_ - 30, 45, 30);
+			plt->gradient_ind = new draw::Fl_Gradient(x_ + 15, y_ + dy + 15, w_ - 25, 45, 30);
 
 			set_group_indicator(curr_y, 280, "Plot");
 			plt->axis_ind = new draw::Fl_Axis(x_ + 20, curr_y + 5, w_ - 40, 220, 15);
@@ -162,7 +187,7 @@ namespace control {
 		}
 
 		Fl_Hor_Value_Slider* set_paramecium_slider(int y_, double step, double init, double mi, double ma, const char* t, Fl_Callback* c, bool skip = false) {
-			auto s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 30, t);
+			auto s = new Fl_Hor_Value_Slider(x() + dx, y_, w() - 2 * dx, 25, t);
 			s->align(FL_ALIGN_BOTTOM);
 			s->color(FL_LIGHT2);
 			s->step(step);
@@ -214,7 +239,6 @@ namespace control {
 
 		static void tabs_cb(Fl_Widget* w, void*) {
 			Fl_Tabs* tabs = (Fl_Tabs*)w;
-			// When tab changed, make sure it has same color as its group
 			int target = fl_intptr_t(tabs->value()->user_data());
 			switch (target) {
 			case 1:
@@ -227,6 +251,7 @@ namespace control {
 				g->show();
 				kiana->has_temp = false;
 				g->stabled = false;
+				kiana->finish_anneal();
 				if (handler->target == Fl_Event_Handler::Barrier) {
 					bar->show();
 				} else {
@@ -257,6 +282,7 @@ namespace control {
 				handler->target = Fl_Event_Handler::Plot;
 				kiana->enable_simulate = false;
 				kiana->hide();
+				kiana->finish_anneal();
 				g->hide();
 				bar->hide();
 				orig->hide();

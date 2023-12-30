@@ -133,12 +133,83 @@ namespace paramecium {
 			}
 			return { Failed,score,energy_used,px,py };
 		}
+
+		int simu_count = 250, curr_count = 0, step_count = 50;
+		double t_st = 1000, curr_t = 1000, t_min = 10, rate = 0.99;
+		double new_l = 0.5, new_r = 0.5, new_m = 0, new_v = 0.1, new_score_sum = 0;
+		double best_l, best_r, best_m, best_v, best_score_sum = 0;
+		double curr_score_sum = 0;
+		bool anneal_finished = true;
+		bool simulate_anneal() {
+			double l = step_length, r = rotate_radius, m = deviation_mean, v = deviation_variance;
+			step_length = new_l, rotate_radius = new_r, deviation_mean = new_m, deviation_variance = new_v;
+			std::uniform_real_distribution<double> rd(0, 1);
+			dr = std::normal_distribution<double>(deviation_mean, deviation_variance);
+			int step_end = std::min(curr_count + step_count, simu_count);
+			while (++curr_count < step_end) {
+				auto sim = simulate_score();
+				new_score_sum += sim.score;
+			}
+			if (curr_count >= simu_count) {
+				if (new_score_sum > best_score_sum) {
+					best_score_sum = new_score_sum;
+					best_l = new_l, best_r = new_r, best_m = new_m, best_v = new_v;
+				}
+				double accept = (new_score_sum - curr_score_sum) / curr_t / total_energy / simu_count * 1e4;
+				curr_count = 0;
+#ifdef _DEBUG
+				std::cout << "curr_t = " << curr_t << ", curr_score = " << curr_score_sum << ", new_score = " << new_score_sum << std::endl;
+#endif // _DEBUG
+				if (new_score_sum > curr_score_sum || new_score_sum > simu_count / 10.0 && exp(accept) > rd(grid::rand_e)) {
+#ifdef _DEBUG
+					if (new_score_sum <= curr_score_sum) {
+						std::cout << accept << std::endl;
+					}
+#endif // _DEBUG
+					curr_score_sum = new_score_sum;
+					reset_status();
+					dr = std::normal_distribution<double>(deviation_mean, deviation_variance);
+					gen_args(new_l, new_r, new_m, new_v);
+					update_sliders();
+					reset_pos();
+					new_score_sum = 0;
+					curr_t *= rate;
+					update_anneal();
+					return curr_t < t_min;
+				}
+				new_score_sum = 0;
+				gen_args(l, r, m, v);
+				curr_t *= rate;
+				update_anneal();
+			}
+			step_length = l, rotate_radius = r, deviation_mean = m, deviation_variance = v;
+			dr = std::normal_distribution<double>(deviation_mean, deviation_variance);
+			return curr_t < t_min;
+		}
+
+		void gen_args(double l, double r, double m, double v) {
+			std::normal_distribution<double> rd(0, 0.5);
+			new_l = std::min(std::max(l + rd(grid::rand_e) * curr_t / 2000, 0.01), 1.0);
+			new_r = std::min(std::max(r + rd(grid::rand_e) * curr_t / 500, -std::numbers::pi), std::numbers::pi);
+			new_m = std::min(std::max(m + rd(grid::rand_e) * curr_t / 4000, -0.25), 0.25);
+			new_v = std::min(std::max(v + rd(grid::rand_e) * curr_t / 1000, 0.01), 0.5);
+		}
+
+		void set_as_best() {
+			step_length = best_l, rotate_radius = best_r, deviation_mean = best_m, deviation_variance = best_v;
+			dr = std::normal_distribution<double>(deviation_mean, deviation_variance);
+			update_sliders();
+		}
 		
 		void reset_status() {
 			resimulate_flag = true, has_temp = false;
 			score_sum = 0;
 			simulation_count = success_count = 0;
 		}
+
+		virtual void update_sliders() = 0;
+		virtual void update_anneal() = 0;
+		virtual void reset_pos() = 0;
 
 		private:
 		void step_forward(double& px, double& rad, double& py, int& gx, int& gy) {

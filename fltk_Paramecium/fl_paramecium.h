@@ -15,17 +15,16 @@ namespace paramecium {
         int pixels_per_grid, updates_per_step = 10, back_cd = 6, endpoint_count = 5;
         double update_factor = 15;
 
-        Fl_Box* op_bg;
-        Fl_Output* score_op, * rate_op;
-        Fl_Button* reset_pos_bt, * default_val_bt;
+        Fl_Box* op_bg = nullptr;
+        Fl_Output* score_op = nullptr, * rate_op = nullptr;
+        Fl_Button* reset_pos_bt = nullptr, * default_val_bt = nullptr, * anneal_bt = nullptr;
         Fl_Hor_Value_Slider* total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip;
+        Fl_Progress* anneal_prog = nullptr;
+        Fl_Int_Input* t_st_ip = nullptr, * t_min_ip = nullptr;
 
         Fl_Paramecium(int x_, int y_, int w_, int h_, int g_size) : Fl_Widget(x_, y_, w_, h_), pixels_per_grid(g_size) {
             temp_x = temp_y = px = py = 22;
             temp_rad = rad = 0;
-            op_bg = nullptr;
-            score_op = rate_op = nullptr;
-            reset_pos_bt = default_val_bt = nullptr;
             total_energy_ip = step_len_ip = rotate_rad_ip = deviation_m_ip = deviation_v_ip = nullptr;
         }
 
@@ -40,6 +39,11 @@ namespace paramecium {
             if (!enable_simulate) {
                 draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid);
                 return;
+            }
+            if (!anneal_finished) {
+                if (simulate_anneal()) {
+                    finish_anneal();
+                }
             }
             if (resimulate_flag) {
                 steps.clear();
@@ -141,7 +145,7 @@ namespace paramecium {
                 return 1;
             }
             case FL_RELEASE: {
-                if (!Fl::event_is_click() || !(Fl::event_button() == FL_LEFT_MOUSE)) {
+                if (!Fl::event_is_click() || !(Fl::event_button() == FL_LEFT_MOUSE) || !anneal_finished) {
                     return 0;
                 }
                 if (has_temp) {
@@ -171,6 +175,37 @@ namespace paramecium {
             deviation_m_ip->value(deviation_mean);
             deviation_v_ip->value(deviation_variance);
         }
+
+        void update_anneal() {
+            double pr = 100 * log(t_st / curr_t) / log(t_st / t_min);
+            anneal_prog->value(pr);
+        }
+        void init_anneal() {
+            if (anneal_finished) {
+                anneal_finished = false;
+                new_l = step_length, new_r = rotate_radius, new_m = deviation_mean, new_v = deviation_variance;
+                t_min = abs(std::atof(t_min_ip->value()));
+                t_st = abs(std::atof(t_st_ip->value()));
+                curr_t = t_st;
+                anneal_prog->show();
+                anneal_prog->value(0);
+                anneal_bt->label("Stop Annealing");
+                t_min_ip->hide();
+                t_st_ip->hide();
+            }
+        }
+        void finish_anneal() {
+            if (!anneal_finished) {
+                anneal_finished = true;
+                reset_pos();
+                set_as_best();
+                resimulate_flag = true;
+                anneal_prog->hide();
+                anneal_bt->label("Start Annealing");
+                t_min_ip->show();
+                t_st_ip->show();
+            }
+        }
     };
 
     static void total_energy_cb(Fl_Widget* o, void* v) {
@@ -195,6 +230,15 @@ namespace paramecium {
         p->rotate_radius = s->value();
         p->reset_status();
         p->reset_pos();
+    }
+
+    static void anneal_cb(Fl_Widget* o, void* v) {
+        Fl_Paramecium* p = (Fl_Paramecium*)v;
+        if (p->anneal_finished) {
+            p->init_anneal();
+        } else {
+            p->finish_anneal();
+        }
     }
 
     static void reset_pos_cb(Fl_Widget* o, void* v) {
