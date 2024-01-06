@@ -11,7 +11,6 @@ namespace control {
 
 		Fl_Control(int x_, int y_, int w_, int h_) :Fl_Tabs(x_, y_, w_, h_) {
 			callback(tabs_cb);
-			this->labelsize(20);
 			int curr_y;
 			environment_control = new Fl_Group(x_ + dx, y_ + dy, w_ - 2 * dx, h_ - dy - dx, "Environment");
 			environment_control->user_data((void*)fl_intptr_t(1));
@@ -37,17 +36,20 @@ namespace control {
 
 			handler->switch_indicator = set_group_indicator(curr_y, 110, "Click on Grid to set Barrier");
 			curr_y += 10;
-
 			g->clear_barrier_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Clear Barriers");
 			g->clear_barrier_bt->color(FL_LIGHT2);
 			g->clear_barrier_bt->labelsize(18);
 			g->clear_barrier_bt->callback(clear_env_cb, g);
 			curr_y += 50;
-
 			handler->switch_bar_orig_bt = new Fl_Button(x_ + dx, curr_y, w_ - 2 * dx, 40, "Switch to Origin");
 			handler->switch_bar_orig_bt->color(FL_LIGHT2);
 			handler->switch_bar_orig_bt->labelsize(18);
 			handler->switch_bar_orig_bt->callback(switch_bar_orig_cb);
+			curr_y += 90;
+
+			set_group_indicator(curr_y, 60, "Settings");
+			curr_y += 10;
+			kiana->animation_speed_ip = set_paramecium_slider(curr_y, 0.1, 1, 0.2, 5, "Animation Speed", animation_speed_cb);
 
 			environment_control->end();
 
@@ -245,25 +247,28 @@ namespace control {
 #ifdef _DEBUG
 				std::cout << "Handleing environment" << std::endl;
 #endif // _DEBUG
-				handler->target = handler->prev_target;
 				kiana->enable_simulate = false;
 				kiana->hide();
 				g->show();
 				kiana->has_temp = false;
 				g->stabled = false;
 				kiana->finish_anneal();
+				plt->hide();
+				if (handler->target == Fl_Event_Handler::Plot) {
+					plt->sync_back(true);
+					kiana->update_sliders();
+				}
+				handler->target = handler->prev_target;
 				if (handler->target == Fl_Event_Handler::Barrier) {
 					bar->show();
 				} else {
 					orig->show();
 				}
-				plt->hide();
 				break;
 			case 2:
 #ifdef _DEBUG
 				std::cout << "Handleing paramecium" << std::endl;
 #endif // _DEBUG
-				handler->target = Fl_Event_Handler::Paramecium;
 				kiana->enable_simulate = true;
 				kiana->show();
 				g->show();
@@ -272,8 +277,11 @@ namespace control {
 				bar->hide();
 				orig->hide();
 				plt->hide();
-				plt->sync_back(true);
-				kiana->update_sliders();
+				if (handler->target == Fl_Event_Handler::Plot) {
+					plt->sync_back(true);
+					kiana->update_sliders();
+				}
+				handler->target = Fl_Event_Handler::Paramecium;
 				break;
 			case 3:
 #ifdef _DEBUG

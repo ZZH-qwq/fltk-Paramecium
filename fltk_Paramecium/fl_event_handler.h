@@ -154,6 +154,12 @@ namespace control {
         g->clear_status();
     }
 
+    static void animation_speed_cb(Fl_Widget* o, void* v) {
+        double cnt = ((Fl_Slider*)o)->value();
+        g->step_count = std::max(static_cast<int>(g->grid_w * g->grid_h * cnt / 20), 1);
+        kiana->update_factor = std::max(16 / cnt - 1, 0.0);
+    }
+
     static void plot_slider_cb(Fl_Widget* o, void* v) {
         Fl_Slider* s = (Fl_Slider*)o;
         plt->args[fl_intptr_t(v)] = s->value();

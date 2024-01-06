@@ -18,7 +18,7 @@ namespace paramecium {
         Fl_Box* op_bg = nullptr;
         Fl_Output* score_op = nullptr, * rate_op = nullptr;
         Fl_Button* reset_pos_bt = nullptr, * default_val_bt = nullptr, * anneal_bt = nullptr;
-        Fl_Hor_Value_Slider* total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip;
+        Fl_Hor_Value_Slider* total_energy_ip, * step_len_ip, * rotate_rad_ip, * deviation_m_ip, * deviation_v_ip, * animation_speed_ip;
         Fl_Progress* anneal_prog = nullptr;
         Fl_Int_Input* t_st_ip = nullptr, * t_min_ip = nullptr;
 
@@ -36,7 +36,7 @@ namespace paramecium {
                 draw::draw_paramecium(temp_x * pixels_per_grid, temp_y * pixels_per_grid, rad, pixels_per_grid);
                 return;
             }
-            if (!enable_simulate) {
+            if (!enable_simulate || !g->finished) {
                 draw::draw_paramecium(px * pixels_per_grid, py * pixels_per_grid, rad, pixels_per_grid);
                 return;
             }
@@ -88,20 +88,23 @@ namespace paramecium {
                 reset_pos();
                 resimulate_flag = true;
             }
-            auto sim = simulate_score();
-            score_sum += sim.score;
-            simulation_count++;
-            if (simulation_count % 15 == 0) {
-                op_bg->copy_label((std::to_string(simulation_count) + " Samples Simulated").c_str());
-                score_op->value((" " + std::to_string(score_sum / simulation_count)).c_str());
-                rate_op->value((" " + std::to_string(100.0 * success_count / simulation_count) + " %").c_str());
-                endpoints.push_back({ sim.ed_x,sim.ed_y });
-                while (endpoints.size() > endpoint_count) {
-                    endpoints.pop_front();
+            int step_simulation = std::max(15 / update_factor, 1.0);
+            for (int i = 0; i < step_simulation; i++) {
+                auto sim = simulate_score();
+                score_sum += sim.score;
+                simulation_count++;
+                if (simulation_count % 15 == 0) {
+                    op_bg->copy_label((std::to_string(simulation_count) + " Samples Simulated").c_str());
+                    score_op->value((" " + std::to_string(score_sum / simulation_count)).c_str());
+                    rate_op->value((" " + std::to_string(100.0 * success_count / simulation_count) + " %").c_str());
+                    endpoints.push_back({ sim.ed_x,sim.ed_y });
+                    while (endpoints.size() > endpoint_count) {
+                        endpoints.pop_front();
+                    }
                 }
-            }
-            if (sim.result == Found) {
-                ++success_count;
+                if (sim.result == Found) {
+                    ++success_count;
+                }
             }
             double lev = 1 - simulation_count / 15.0 + std::floor(simulation_count / 15.0);
             for (int i = 0; i < endpoints.size(); i++) {

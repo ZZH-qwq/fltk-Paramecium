@@ -14,7 +14,7 @@ namespace grid {
 	public:
 		int pixels_per_grid;
 		Fl_Offscreen oscr_grid;
-		const size_t step_count;
+		size_t step_count;
 		bool show_distance = true;
 		Fl_Image* bg_white_transparent;
 		Fl_RGB_Image* grid_image = nullptr;
@@ -54,12 +54,12 @@ namespace grid {
 				gradient_ind->red = (double)d_min / 2;
 				gradient_ind->blue = (double)d_max / 2;
 			}
-			if ((redraw_flag || flush_flag) && !stabled) {
+			if ((redraw_flag || flush_flag) && (!stabled || !finished)) {
 				draw_grid();
 				//print_dist();
 				//draw_flow(20, 20);
 				redraw_flag = false;
-			} else if (redraw_flag && stabled && grid_image) {
+			} else if (redraw_flag && stabled && grid_image && queue.empty()) {
 				grid_image->draw(x(), y());
 			} else {
 				update_grid();
@@ -71,7 +71,7 @@ namespace grid {
 
 		void draw_grid() {
 			updated.clear();
-			bool finished = queue.empty();
+			finished = queue.empty();
 			if (finished || flush_flag) {
 				fl_begin_offscreen(oscr_grid);
 				fl_rectf(0, 0, w(), h(), FL_WHITE);

@@ -40,7 +40,7 @@ namespace grid {
 		int d_min = 1, d_max = 10;
 		int curr_d = d_min;
 
-		bool show_border = false, stabled = false;
+		bool show_border = false, stabled = false, finished = false;
 		bool step_flag = false, redraw_flag = true, flush_flag = true;
 
 		// for test only
@@ -168,6 +168,7 @@ namespace grid {
 			status = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
 			distance = std::vector<std::vector<int>>(grid_w, std::vector<int>(grid_h));
 			redraw_flag = true;
+			finished = false;
 			d_max = grid_w / 2;
 			queue = std::deque<std::list<Intermediate>>(1);
 			curr_d = d_min;
